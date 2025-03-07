@@ -81,7 +81,7 @@ const Login = () => {
         }}
       >
         <div className="hero-overlay"></div>
-        <div className="w-full max-w-md p-8 bg-white rounded-lg relative z-10 backdrop-blur-sm bg-white/40 border border-white/40">
+        <div className="w-full max-w-md p-8 rounded-lg relative z-10 backdrop-blur-sm bg-white/40 border border-white/40">
           <div className="flex justify-center content-center">
             <img
               src="https://placehold.co/400"
