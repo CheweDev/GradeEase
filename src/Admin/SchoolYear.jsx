@@ -57,7 +57,7 @@ const SchoolYear = () => {
               <tr>
                 <th>School Year</th>
                 <th>Current</th>
-                <th></th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -76,10 +76,10 @@ const SchoolYear = () => {
                       "No"
                     )}
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="p-3">
                     {!item.isCurrent && (
                       <button
-                        className="px-3 py-1 text-sm bg-info text-white rounded cursor-pointer"
+                        className="btn btn-sm btn-info text-white"
                         onClick={() => setAsCurrent(item.year)}
                       >
                         Set as Current

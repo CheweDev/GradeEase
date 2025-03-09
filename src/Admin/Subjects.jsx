@@ -146,10 +146,10 @@ const Subjects = () => {
                   <td className="p-3">{subject.description}</td>
                   <td className="p-3">
                     <button
-                      className="px-3 py-1 text-sm bg-info text-white rounded flex items-center gap-1 cursor-pointer"
+                      className="btn btn-sm btn-info text-white"
                       onClick={() => editSubject(subject)}
                     >
-                      <FiEdit size={14} /> Edit
+                      <FiEdit className="inline-block" /> Edit
                     </button>
                   </td>
                 </tr>

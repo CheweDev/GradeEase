@@ -142,12 +142,12 @@ const Advisors = () => {
                     <td className="p-3">{item.name}</td>
                     <td className="p-3">{item.advisory.join(", ")}</td>
                     <td className="p-3">{item.grade}</td>
-                    <td className="p-3 text-right">
+                    <td className="p-3">
                       <button
-                        className="px-3 py-1 text-sm bg-info text-white rounded flex items-center gap-1"
+                        className="btn btn-sm bg-info text-white"
                         onClick={() => openModal(item)}
                       >
-                        <FiEdit size={14} /> Edit
+                        <FiEdit className="inline-block" /> Edit
                       </button>
                     </td>
                   </tr>

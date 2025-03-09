@@ -48,9 +48,9 @@ const GradeLevel = () => {
           <table className="table w-full">
             <thead>
               <tr>
-                <th className="p-3 text-left">Grade Level</th>
-                <th className="p-3 text-left">Assigned Teachers</th>
-                <th className="p-3 text-right">Actions</th>
+                <th>Grade Level</th>
+                <th>Assigned Teachers</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -70,12 +70,12 @@ const GradeLevel = () => {
                       </span>
                     )}
                   </td>
-                  <td className="p-3 text-right">
+                  <td className="p-3">
                     <button
-                      className="px-3 py-1 bg-info text-white rounded"
+                      className="btn btn-sm btn-info text-white"
                       onClick={() => openModal(grade.level)}
                     >
-                      <IoAddCircleSharp className="inline-block mr-2" />
+                      <IoAddCircleSharp className="inline-block" />
                       Add Teacher
                     </button>
                   </td>

@@ -9,6 +9,9 @@ import Advisors from "./Admin/Advisors.jsx";
 import Students from "./Admin/Students.jsx";
 import Subjects from "./Admin/Subjects.jsx";
 import AcademicRecords from "./Admin/AcademicRecords.jsx";
+import ByGradeReport from "./Admin/ByGradeReport.jsx";
+import BySectionReport from "./Admin/BySectionReport.jsx";
+import UserAccounts from "./Admin/UserAccounts.jsx";
 
 const Router = () => {
   return (
@@ -23,6 +26,9 @@ const Router = () => {
         <Route path="/students" element={<Students />} />
         <Route path="/subjects" element={<Subjects />} />
         <Route path="/academic-records" element={<AcademicRecords />} />
+        <Route path="/grade-report" element={<ByGradeReport />} />
+        <Route path="/section-report" element={<BySectionReport />} />
+        <Route path="/user-accounts" element={<UserAccounts />} />
         <Route path="/student-dashboard" element={<StudentDashboard />} />
       </Routes>
     </BrowserRouter>

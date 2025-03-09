@@ -256,10 +256,9 @@ const Sidebar = () => {
 
             {/* Reports */}
             <li>
-              <a
-                href="#"
+              <button
                 onClick={toggleReports}
-                className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441] w-full text-left"
               >
                 <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                   <FiBarChart2 size={16} />
@@ -272,30 +271,42 @@ const Sidebar = () => {
                     <FiChevronRight size={16} />
                   )}
                 </span>
-              </a>
+              </button>
               {isReportsOpen && (
                 <ul className="pl-8 space-y-1">
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/section-report"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <FiBarChart2 size={16} />
                       </span>
                       <span className="flex-1">By Section</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/grade-report"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <FiBarChart2 size={16} />
                       </span>
                       <span className="flex-1">By Grade Level</span>
-                    </a>
+                    </NavLink>
                   </li>
                 </ul>
               )}
@@ -303,15 +314,19 @@ const Sidebar = () => {
 
             {/* User */}
             <li>
-              <a
-                href="#"
-                className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+              <NavLink
+                to="/user-accounts"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-2.5 text-sm ${
+                    isActive ? "bg-teal-500 text-white" : "hover:bg-[#2a3441]"
+                  }`
+                }
               >
                 <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                   <FiUser size={16} />
                 </span>
                 <span className="flex-1">User</span>
-              </a>
+              </NavLink>
             </li>
           </ul>
         </nav>

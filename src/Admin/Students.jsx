@@ -127,12 +127,12 @@ const Students = () => {
                     <td className="p-3">{student.name}</td>
                     <td className="p-3">{student.grade}</td>
                     <td className="p-3">{student.section}</td>
-                    <td className="p-3 text-right">
+                    <td className="p-3">
                       <button
-                        className="px-3 py-1 text-sm bg-info text-white rounded flex items-center gap-1 cursor-pointer"
+                        className="btn btn-sm btn-info text-white"
                         onClick={() => setSelectedStudent(student)}
                       >
-                        <FiEye size={14} /> View Profile
+                        <FiEye className="inline-block" /> View Profile
                       </button>
                     </td>
                   </tr>

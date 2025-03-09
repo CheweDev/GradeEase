@@ -134,10 +134,10 @@ const AcademicRecords = () => {
                   <td className="p-3">{student.section}</td>
                   <td className="p-3">
                     <button
-                      className="px-3 py-1 text-sm bg-info text-white rounded flex items-center gap-1 cursor-pointer"
+                      className="btn btn-sm btn-info text-white"
                       onClick={() => handleEditRecord(student)}
                     >
-                      <FiEdit size={14} /> Edit Record
+                      <FiEdit className="inline-block" /> Edit Record
                     </button>
                   </td>
                 </tr>
