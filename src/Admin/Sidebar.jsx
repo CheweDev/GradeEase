@@ -6,6 +6,7 @@ import { LuCalendar1, LuClipboardList } from "react-icons/lu";
 import { PiStudentFill } from "react-icons/pi";
 import { TbChecklist } from "react-icons/tb";
 import { FaAward } from "react-icons/fa6";
+import { NavLink } from "react-router-dom";
 import {
   FiGrid,
   FiBarChart2,
@@ -95,23 +96,26 @@ const Sidebar = () => {
         <nav className="flex-1 py-4">
           <ul className="space-y-1">
             <li>
-              <a
-                href="#"
-                className="flex items-center px-4 py-2.5 text-sm bg-teal-500 text-white"
+              <NavLink
+                to="/admin-dashboard"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-2.5 text-sm ${
+                    isActive ? "bg-teal-500 text-white" : "hover:bg-[#2a3441]"
+                  }`
+                }
               >
                 <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                   <FiGrid size={16} />
                 </span>
                 <span className="flex-1">Dashboard</span>
-              </a>
+              </NavLink>
             </li>
 
             {/* Master List */}
             <li>
-              <a
-                href="#"
+              <button
                 onClick={toggleMasterList}
-                className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441] w-full text-left"
               >
                 <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                   <LuClipboardList size={16} />
@@ -124,85 +128,127 @@ const Sidebar = () => {
                     <FiChevronRight size={16} />
                   )}
                 </span>
-              </a>
+              </button>
               {isMasterListOpen && (
                 <ul className="pl-8 space-y-1">
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/school-year"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <LuCalendar1 size={16} />
                       </span>
                       <span className="flex-1">School Year</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/grade-level"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <TbChecklist size={16} />
                       </span>
                       <span className="flex-1">Manage Grade</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/section"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <FaSchoolCircleCheck size={16} />
                       </span>
                       <span className="flex-1">Section</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/advisors"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <FaChalkboardTeacher size={16} />
                       </span>
                       <span className="flex-1">Teacher</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/students"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <PiStudentFill size={16} />
                       </span>
                       <span className="flex-1">Student</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/subjects"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <LiaSchoolSolid size={16} />
                       </span>
                       <span className="flex-1">Subject</span>
-                    </a>
+                    </NavLink>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441]"
+                    <NavLink
+                      to="/academic-records"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-2.5 text-sm ${
+                          isActive
+                            ? "bg-teal-500 text-white"
+                            : "hover:bg-[#2a3441]"
+                        }`
+                      }
                     >
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <FaAward size={16} />
                       </span>
                       <span className="flex-1">Academic Grade</span>
-                    </a>
+                    </NavLink>
                   </li>
                 </ul>
               )}
