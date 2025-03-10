@@ -1,18 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { IoAddCircleSharp } from "react-icons/io5";
+import supabase from "../SupabaseClient.jsx";
 
 const SchoolYear = () => {
-  const [schoolYears, setSchoolYears] = useState([
-    { year: "2019-2020", isCurrent: false },
-    { year: "2018-2019", isCurrent: false },
-    { year: "2017-2018", isCurrent: true },
-    { year: "2016-2017", isCurrent: false },
-  ]);
-
+  const [schoolYears, setSchoolYears] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newYear, setNewYear] = useState("");
+  const [school_year, setSchoolYear] = useState("");
+
+
+  useEffect(() => {
+    fetchSchoolYear();
+  }, []);
+
+  const fetchSchoolYear = async () => {
+    const { data } = await supabase
+      .from("School Year")
+      .select("*");
+    
+   setSchoolYears(data);
+  };
+
+
+  const handleAddSchoolYear = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+        .from('School Year')
+        .insert([
+          {
+            school_year,
+            current : "No",
+          },
+        ])
+      if (error) {
+        console.error("Error inserting data:", error);
+        alert("Error inserting data");
+      } else {
+        console.log("Data inserted successfully:", data);
+        window.location.reload();
+      }
+  };
+
 
   // Function to set a year as current
   const setAsCurrent = (year) => {
@@ -22,14 +51,6 @@ const SchoolYear = () => {
         isCurrent: item.year === year,
       }))
     );
-  };
-
-  // Function to add a new school year
-  const addSchoolYear = () => {
-    if (!newYear) return;
-    setSchoolYears([...schoolYears, { year: newYear, isCurrent: false }]);
-    setNewYear("");
-    setIsModalOpen(false);
   };
 
   return (
@@ -66,7 +87,7 @@ const SchoolYear = () => {
                   key={item.year}
                   className={`border-t ${item.isCurrent ? "bg-green-100" : ""}`}
                 >
-                  <td className="p-3">{item.year}</td>
+                  <td className="p-3">{item.school_year}</td>
                   <td className="p-3">
                     {item.isCurrent ? (
                       <span className="text-green-700 font-semibold">
@@ -118,8 +139,8 @@ const SchoolYear = () => {
                   type="text"
                   className="w-full p-2 rounded"
                   placeholder="Enter school year (e.g., 2024-2025)"
-                  value={newYear}
-                  onChange={(e) => setNewYear(e.target.value)}
+                  value={school_year}
+                  onChange={(e) => setSchoolYear(e.target.value)}
                 />
               </label>
 
@@ -132,7 +153,7 @@ const SchoolYear = () => {
                 </button>
                 <button
                   className="btn bg-[#333] text-white"
-                  onClick={addSchoolYear}
+                  onClick={handleAddSchoolYear}
                 >
                   Add
                 </button>

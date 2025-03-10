@@ -1,80 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { IoAddCircleSharp } from "react-icons/io5";
 import { FiEdit } from "react-icons/fi";
+import supabase from "../SupabaseClient.jsx";
 
 const Advisors = () => {
-  const [advisors, setAdvisors] = useState([
-    {
-      id: 1,
-      name: "Mr. Smith",
-      advisory: ["Section A", "Section B"],
-      grade: "Grade 10",
-    },
-    { id: 2, name: "Ms. Johnson", advisory: ["Section C"], grade: "Grade 9" },
-    {
-      id: 3,
-      name: "Mr. Lee",
-      advisory: ["Section D", "Section E"],
-      grade: "Grade 8",
-    },
-  ]);
-
+  const [advisors, setAdvisors] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newAdvisory, setNewAdvisory] = useState("");
-  const [newGrade, setNewGrade] = useState("");
+  const [name, setName] = useState("");
+  const [advisory, setAdvisory] = useState("");
+  const [grade, setGrade] = useState("");
   const [editingAdvisor, setEditingAdvisor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
+  const [editId, setEditId] = useState("");
+
+  useEffect(() => {
+    fetchAdvisers();
+  }, []);
+
+  const fetchAdvisers = async () => {
+    const { data } = await supabase
+      .from("Advisers")
+      .select("*");
+    
+   setAdvisors(data);
+  };
 
   // Open modal for adding/editing advisors
   const openModal = (advisor = null) => {
     if (advisor) {
       setEditingAdvisor(advisor);
-      setNewName(advisor.name);
-      setNewAdvisory(advisor.advisory.join(", ")); // Convert array to string
-      setNewGrade(advisor.grade);
+      setEditId(advisor.id);
+      setName(advisor.name);
+      setAdvisory(advisor.advisory);
+      setGrade(advisor.grade);
     } else {
       setEditingAdvisor(null);
-      setNewName("");
-      setNewAdvisory("");
-      setNewGrade("");
+      setName("");
+      setAdvisory("");
+      setGrade("");
     }
     setIsModalOpen(true);
   };
 
-  // Add new advisor
-  const addAdvisor = () => {
-    if (!newName || !newAdvisory || !newGrade) return;
-    setAdvisors([
-      ...advisors,
-      {
-        id: Date.now(),
-        name: newName,
-        advisory: newAdvisory.split(",").map((s) => s.trim()),
-        grade: newGrade,
-      },
-    ]);
-    setIsModalOpen(false);
+  const addAdvisor = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+        .from('Advisers')
+        .insert([
+          {
+           name,
+           advisory,
+           grade,
+          },
+        ])
+      if (error) {
+        console.error("Error inserting data:", error);
+        alert("Error inserting data");
+      } else {
+        console.log("Data inserted successfully:", data);
+        window.location.reload();
+      }
   };
 
   // Update advisor
-  const updateAdvisor = () => {
-    setAdvisors(
-      advisors.map((item) =>
-        item.id === editingAdvisor.id
-          ? {
-              ...item,
-              name: newName,
-              advisory: newAdvisory.split(",").map((s) => s.trim()),
-              grade: newGrade,
-            }
-          : item
-      )
-    );
-    setIsModalOpen(false);
+  const updateAdvisor = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+        .from('Advisers')
+        .update(
+          {
+           name,
+           advisory,
+           grade,
+          })
+        .eq('id', editId)  
+      if (error) {
+        console.error("Error inserting data:", error);
+        alert("Error inserting data");
+      } else {
+        console.log("Data inserted successfully:", data);
+        window.location.reload();
+      }
   };
 
   // Filter logic
@@ -93,7 +102,7 @@ const Advisors = () => {
 
         {/* Header Section & Filters */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Manage Advisors</h2>
+          <h2 className="text-2xl font-semibold">Manage Advisers</h2>
           <div className="flex gap-4 mb-4">
             <select
               className="p-2 border rounded w-1/3"
@@ -110,7 +119,7 @@ const Advisors = () => {
             <input
               type="text"
               className="p-2 border rounded w-2/3"
-              placeholder="Search by advisor name..."
+              placeholder="Search by adviser name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -119,7 +128,7 @@ const Advisors = () => {
               onClick={() => openModal()}
             >
               <IoAddCircleSharp size={18} />
-              Add Advisor
+              Add Adviser
             </button>
           </div>
         </div>
@@ -129,7 +138,7 @@ const Advisors = () => {
           <table className="table">
             <thead>
               <tr>
-                <th>Advisor Name</th>
+                <th>Adviser Name</th>
                 <th>Advisory Section(s)</th>
                 <th>Grade Level</th>
                 <th>Actions</th>
@@ -140,7 +149,7 @@ const Advisors = () => {
                 filteredAdvisors.map((item) => (
                   <tr key={item.id} className="border-t">
                     <td className="p-3">{item.name}</td>
-                    <td className="p-3">{item.advisory.join(", ")}</td>
+                    <td className="p-3">{item.advisory}</td>
                     <td className="p-3">{item.grade}</td>
                     <td className="p-3">
                       <button
@@ -155,7 +164,7 @@ const Advisors = () => {
               ) : (
                 <tr>
                   <td colSpan="4" className="text-center p-4 text-gray-500">
-                    No advisors found.
+                    No advisers found.
                   </td>
                 </tr>
               )}
@@ -177,8 +186,8 @@ const Advisors = () => {
                   type="text"
                   className="w-full p-2 rounded"
                   placeholder="Enter advisor name (e.g., Mr. Smith)"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </label>
 
@@ -188,8 +197,8 @@ const Advisors = () => {
                   type="text"
                   className="w-full p-2 rounded"
                   placeholder="Enter advisory sections (comma separated)"
-                  value={newAdvisory}
-                  onChange={(e) => setNewAdvisory(e.target.value)}
+                  value={advisory}
+                  onChange={(e) => setAdvisory(e.target.value)}
                 />
               </label>
 
@@ -199,8 +208,8 @@ const Advisors = () => {
                   type="text"
                   className="w-full p-2 rounded"
                   placeholder="Enter grade level (e.g., Grade 10)"
-                  value={newGrade}
-                  onChange={(e) => setNewGrade(e.target.value)}
+                  value={grade}
+                  onChange={(e) => setGrade(e.target.value)}
                 />
               </label>
 

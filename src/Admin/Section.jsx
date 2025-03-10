@@ -1,66 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { IoAddCircleSharp } from "react-icons/io5";
 import { FiEdit } from "react-icons/fi";
+import supabase from "../SupabaseClient.jsx";
 
 const Section = () => {
-  const [sections, setSections] = useState([
-    { id: 1, name: "Section A", grade: "Grade 10" },
-    { id: 2, name: "Section B", grade: "Grade 9" },
-    { id: 3, name: "Section C", grade: "Grade 8" },
-    { id: 4, name: "Section D", grade: "Grade 7" },
-    { id: 5, name: "Section E", grade: "Grade 10" },
-  ]);
-
+  const [sections, setSections] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newSection, setNewSection] = useState("");
-  const [newGrade, setNewGrade] = useState("");
+  const [section, setSection] = useState("");
+  const [grade_level, setGradeLevel] = useState("");
   const [editingSection, setEditingSection] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
+  const [editId, setEditId] = useState("");
+
+    useEffect(() => {
+      fetchSection();
+    }, []);
+  
+    const fetchSection = async () => {
+      const { data } = await supabase
+        .from("Section")
+        .select("*");
+      
+     setSections(data);
+    };
+  
 
   // Open modal for adding/editing section
   const openModal = (section = null) => {
     if (section) {
       setEditingSection(section);
-      setNewSection(section.name);
-      setNewGrade(section.grade);
+      setEditId(section.id);
+      setSection(section.section);
+      setGradeLevel(section.grade_level);
     } else {
       setEditingSection(null);
-      setNewSection("");
-      setNewGrade("");
+      setSection("");
+      setGradeLevel("");
     }
     setIsModalOpen(true);
   };
 
-  // Add new section
-  const addSection = () => {
-    if (!newSection || !newGrade) return;
-    setSections([
-      ...sections,
-      { id: Date.now(), name: newSection, grade: newGrade },
-    ]);
-    setIsModalOpen(false);
+  const handleAddSection = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+        .from('Section')
+        .insert([
+          {
+           section,
+           grade_level, 
+          },
+        ])
+      if (error) {
+        console.error("Error inserting data:", error);
+        alert("Error inserting data");
+      } else {
+        console.log("Data inserted successfully:", data);
+        window.location.reload();
+      }
   };
 
-  // Update section
-  const updateSection = () => {
-    setSections(
-      sections.map((item) =>
-        item.id === editingSection.id
-          ? { ...item, name: newSection, grade: newGrade }
-          : item
-      )
-    );
-    setIsModalOpen(false);
+
+  const handleUpdateSection = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase
+        .from('Section')
+        .update(
+          {
+           section,
+           grade_level, 
+          })
+        .eq('id', editId)  
+      if (error) {
+        console.error("Error inserting data:", error);
+        alert("Error inserting data");
+      } else {
+        console.log("Data inserted successfully:", data);
+        window.location.reload();
+      }
   };
 
   // Filter logic
   const filteredSections = sections.filter((section) => {
     return (
-      (selectedGrade === "" || section.grade === selectedGrade) &&
-      section.name.toLowerCase().includes(searchTerm.toLowerCase())
+      (selectedGrade === "" || section.grade_level === selectedGrade) &&
+      section.section.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
@@ -80,11 +106,12 @@ const Section = () => {
               onChange={(e) => setSelectedGrade(e.target.value)}
             >
               <option value="">All Grades</option>
-              {[...new Set(sections.map((s) => s.grade))].map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
+              <option value="Grade 1">Grade 1</option>
+                <option value="Grade 2">Grade 2</option>
+                <option value="Grade 3">Grade 3</option>
+                <option value="Grade 4">Grade 4</option>
+                <option value="Grade 5">Grade 5</option>
+                <option value="Grade 6">Grade 6</option>
             </select>
             <input
               type="text"
@@ -117,8 +144,8 @@ const Section = () => {
               {filteredSections.length > 0 ? (
                 filteredSections.map((item) => (
                   <tr key={item.id} className="border-t">
-                    <td className="p-3">{item.name}</td>
-                    <td className="p-3">{item.grade}</td>
+                    <td className="p-3">{item.section}</td>
+                    <td className="p-3">{item.grade_level}</td>
                     <td className="p-3">
                       <button
                         className="btn btn-sm btn-info text-white"
@@ -154,21 +181,30 @@ const Section = () => {
                   type="text"
                   className="w-full p-2 rounded"
                   placeholder="Enter section name (e.g., Section A)"
-                  value={newSection}
-                  onChange={(e) => setNewSection(e.target.value)}
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
                 />
               </label>
 
               {/* Grade Level Input */}
               <label className="input w-full mb-4">
-                <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter grade level (e.g., Grade 10)"
-                  value={newGrade}
-                  onChange={(e) => setNewGrade(e.target.value)}
-                />
-              </label>
+              <select
+                className="w-full p-2 rounded"
+                value={grade_level}
+                onChange={(e) => setGradeLevel(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select grade level
+                </option>
+                <option value="Grade 1">Grade 1</option>
+                <option value="Grade 2">Grade 2</option>
+                <option value="Grade 3">Grade 3</option>
+                <option value="Grade 4">Grade 4</option>
+                <option value="Grade 5">Grade 5</option>
+                <option value="Grade 6">Grade 6</option>
+              </select>
+            </label>
+
 
               <div className="flex justify-end space-x-2">
                 <button
@@ -179,7 +215,7 @@ const Section = () => {
                 </button>
                 <button
                   className="btn bg-[#333] text-white"
-                  onClick={editingSection ? updateSection : addSection}
+                  onClick={editingSection ? handleUpdateSection : handleAddSection}
                 >
                   {editingSection ? "Save Changes" : "Add"}
                 </button>

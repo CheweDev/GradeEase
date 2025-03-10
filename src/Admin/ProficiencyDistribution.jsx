@@ -82,7 +82,7 @@ const ProficiencyDistribution = () => {
       },
       {
         name: "Grade 5",
-        totalStudents: 58,
+        totalStudents: 50,
         distribution: {
           Outstanding: 10,
           "Very Satisfactory": 18,
