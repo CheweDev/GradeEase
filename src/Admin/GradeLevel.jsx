@@ -1,38 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
-import { IoAddCircleSharp } from "react-icons/io5";
+import supabase from "../SupabaseClient.jsx";
 
 const GradeLevel = () => {
-  const [grades, setGrades] = useState([
-    { level: "Grade 1", teachers: ["Mr. Smith"] },
-    { level: "Grade 2", teachers: ["Ms. Johnson"] },
-    { level: "Grade 3", teachers: [] },
-    { level: "Grade 4", teachers: ["Mr. Brown"] },
-    { level: "Grade 5", teachers: [] },
-    { level: "Grade 6", teachers: ["Ms. Davis"] },
-  ]);
+  const [grades, setGrades] = useState([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState(null);
-  const [newTeacher, setNewTeacher] = useState("");
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const openModal = (grade) => {
-    setSelectedGrade(grade);
-    setIsModalOpen(true);
-  };
+  const fetchData = async () => {
+    const { data } = await supabase.from("Advisers").select("*");
 
-  const addTeacher = () => {
-    if (!newTeacher) return;
-    setGrades((prev) =>
-      prev.map((g) =>
-        g.level === selectedGrade
-          ? { ...g, teachers: [...g.teachers, newTeacher] }
-          : g
-      )
-    );
-    setNewTeacher("");
-    setIsModalOpen(false);
+    // Group data by grade
+    const groupedData = data.reduce((acc, curr) => {
+      if (!acc[curr.grade]) {
+        acc[curr.grade] = { grade: curr.grade, teachers: [] };
+      }
+      acc[curr.grade].teachers.push(curr.name);
+      return acc;
+    }, {});
+
+    setGrades(Object.values(groupedData)); // Convert object back to array
   };
 
   return (
@@ -50,13 +40,12 @@ const GradeLevel = () => {
               <tr>
                 <th>Grade Level</th>
                 <th>Assigned Teachers</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {grades.map((grade) => (
-                <tr key={grade.level} className="border-t">
-                  <td className="p-3 font-semibold">{grade.level}</td>
+                <tr key={grade.grade} className="border-t">
+                  <td className="p-3 font-semibold">{grade.grade}</td>
                   <td className="p-3">
                     {grade.teachers.length > 0 ? (
                       grade.teachers.map((teacher, index) => (
@@ -70,54 +59,11 @@ const GradeLevel = () => {
                       </span>
                     )}
                   </td>
-                  <td className="p-3">
-                    <button
-                      className="btn btn-sm btn-info text-white"
-                      onClick={() => openModal(grade.level)}
-                    >
-                      <IoAddCircleSharp className="inline-block" />
-                      Add Teacher
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {/* Modal for Adding Teachers */}
-        {isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
-            <div className="bg-white p-6 rounded shadow-lg w-96">
-              <h3 className="text-lg font-semibold mb-4">
-                Add Teacher to {selectedGrade}
-              </h3>
-
-              <input
-                type="text"
-                className="w-full p-2 border rounded mb-4"
-                placeholder="Enter teacher's name"
-                value={newTeacher}
-                onChange={(e) => setNewTeacher(e.target.value)}
-              />
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 bg-[#333] text-white rounded"
-                  onClick={addTeacher}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );
