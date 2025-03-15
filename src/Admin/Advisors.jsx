@@ -14,16 +14,22 @@ const Advisors = () => {
   const [editingAdvisor, setEditingAdvisor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
+  const [sections, setSections] = useState([]);
   const [editId, setEditId] = useState("");
 
   useEffect(() => {
     fetchAdvisers();
+    fetchSections();
   }, []);
 
   const fetchAdvisers = async () => {
     const { data } = await supabase.from("Advisers").select("*");
-
     setAdvisors(data);
+  };
+
+  const fetchSections = async () => {
+    const { data } = await supabase.from("Section").select("*");
+    setSections(data);
   };
 
   // Open modal for adding/editing advisors
@@ -57,8 +63,46 @@ const Advisors = () => {
       alert("Error inserting data");
     } else {
       console.log("Data inserted successfully:", data);
+      createAccount();
+    }
+  };
+
+  const createAccount = async () => {
+    const { data, error } = await supabase.from("Users").insert([
+      {
+        password: generateRandomPassword(),
+        name,
+        role: "TEACHER",
+        email: `${name?.toLowerCase().replace(/\s+/g, "")}@edu.ph`,
+        status: "Verified",
+      },
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
       window.location.reload();
     }
+  };
+
+  const generateRandomPassword = () => {
+    const length = 8;
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const allChars = uppercase + lowercase + numbers;
+  
+    let password =
+      uppercase[Math.floor(Math.random() * uppercase.length)] +
+      lowercase[Math.floor(Math.random() * lowercase.length)] +
+      numbers[Math.floor(Math.random() * numbers.length)];
+  
+ 
+    for (let i = 3; i < length; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    return password.split("").sort(() => Math.random() - 0.5).join("");
   };
 
   // Update advisor
@@ -186,27 +230,34 @@ const Advisors = () => {
                 />
               </label>
 
-              {/* Advisory Sections Input */}
-              <label className="input w-full mb-4">
-                <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter advisory sections (comma separated)"
-                  value={advisory}
-                  onChange={(e) => setAdvisory(e.target.value)}
-                />
-              </label>
-
               {/* Grade Level Input */}
               <label className="input w-full mb-4">
-                <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter grade level (e.g., Grade 10)"
-                  value={grade}
-                  onChange={(e) => setGrade(e.target.value)}
-                />
+              <select
+                className="w-full"
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+              >
+                <option value="" disabled>Select Grade Level</option>
+                {sections.map((item, index) => (
+                  <option key={index} value={item.grade_level}>{item.grade_level}</option>
+                ))}
+              </select>
               </label>
+
+                   {/* Advisory Sections Input */}
+                   <label className="input w-full mb-4">
+              <select
+                className="w-full"
+                value={advisory}
+                  onChange={(e) => setAdvisory(e.target.value)}
+              >
+                <option value="" disabled>Select Section</option>
+                {sections.map((item, index) => (
+                  <option key={index} value={item.section}>{item.section}</option>
+                ))}
+              </select>
+              </label>
+
 
               <div className="flex justify-end space-x-2">
                 <button

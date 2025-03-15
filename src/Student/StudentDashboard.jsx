@@ -1,69 +1,122 @@
 import { useState, useEffect } from "react";
 import StudentSidebar from "./StudentSidebar.jsx";
 import Header from "../Admin/Header.jsx";
+import supabase from "../SupabaseClient.jsx";
 
 const StudentDashboard = () => {
+  const studentName = sessionStorage.getItem("name");
   const [filteredGrades, setFilteredGrades] = useState([]);
   const [studentInfo, setStudentInfo] = useState({
-    name: "Marc Dominic Gerasmio",
-    id: "20241001",
-    section: "Grade 10 - A",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    name: "",
+    lrn: "",
+    section: "",
   });
 
-  const [schoolYear, setSchoolYear] = useState("2024-2025");
-  const [quarter, setQuarter] = useState("1st");
+  const [schoolYear, setSchoolYear] = useState("2025-2026");
+  const [quarter, setQuarter] = useState("1st Grading");
+  const [loading, setLoading] = useState(true);
 
-  // Dummy data for grades
-  const dummyGrades = [
-    {
-      schoolYear: "2024-2025",
-      quarter: "1st",
-      subjects: [
-        { subject: "Mathematics", grade: "A" },
-        { subject: "English", grade: "B+" },
-        { subject: "Science", grade: "A-" },
-      ],
-    },
-    {
-      schoolYear: "2024-2025",
-      quarter: "2nd",
-      subjects: [
-        { subject: "Mathematics", grade: "B+" },
-        { subject: "English", grade: "A" },
-        { subject: "Science", grade: "B" },
-      ],
-    },
-    {
-      schoolYear: "2024-2025",
-      quarter: "3rd",
-      subjects: [
-        { subject: "Mathematics", grade: "A-" },
-        { subject: "English", grade: "B" },
-        { subject: "Science", grade: "A" },
-      ],
-    },
-    {
-      schoolYear: "2024-2025",
-      quarter: "4th",
-      subjects: [
-        { subject: "Mathematics", grade: "A" },
-        { subject: "English", grade: "B+" },
-        { subject: "Science", grade: "A-" },
-      ],
-    },
-  ];
+  // Subject display names mapping
+  const subjectDisplayNames = {
+    mtb_mle: "MTB-MLE",
+    esp: "ESP",
+    english: "English",
+    math: "Mathematics",
+    science: "Science",
+    filipino: "Filipino",
+    ap: "Araling Panlipunan",
+    ep: "Edukasyon sa Pagpapakatao",
+    mapeh: "MAPEH",
+    average: "General Average"
+  };
 
-  // Simulate fetching and filtering grades based on school year and quarter
+  // Fetch student data from Supabase
   useEffect(() => {
-    // Filter grades based on school year and quarter
-    const filtered = dummyGrades.filter(
-      (data) => data.schoolYear === schoolYear && data.quarter === quarter
-    );
-    if (filtered.length > 0) {
-      setFilteredGrades(filtered[0].subjects);
+    const fetchStudentData = async () => {
+      try {
+        setLoading(true);
+        // Fetch student information
+        const { data: studentData, error: studentError } = await supabase
+          .from("Student Data")
+          .select("*")
+          .eq("name", studentName)
+          .single();
+
+        if (studentError) {
+          console.error("Error fetching student data:", studentError);
+          return;
+        }
+
+        if (studentData) {
+          setStudentInfo({
+            name: studentData.name,
+            lrn: studentData.lrn,
+            section: studentData.section,
+          });
+
+          // Use the student's name to fetch their grades
+          fetchGrades(studentData.name, schoolYear, quarter);
+        }
+      } catch (error) {
+        console.error("Error in fetchStudentData:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (studentName) {
+      fetchStudentData();
     }
-  }, [schoolYear, quarter]);
+  }, [studentName]);
+
+  const fetchGrades = async (studentName, year, qtr) => {
+    try {
+      setLoading(true);
+      const { data: gradesData, error: gradesError } = await supabase
+        .from("Grades")
+        .select("*")
+        .eq("name", studentName)
+        .eq("school_year", year)
+        .eq("grading", qtr);
+
+      if (gradesError) {
+        console.error("Error fetching grades:", gradesError);
+        return;
+      }
+
+      if (gradesData && gradesData.length > 0) {
+        // Since the grades are stored as individual columns, we need to transform them
+        // into a format that can be displayed in the table
+        const gradeRecord = gradesData[0]; // Assuming one record per student per quarter
+        
+        // Transform the data to match the expected format
+        const formattedGrades = Object.entries(gradeRecord)
+          .filter(([key]) => [
+            "mtb_mle", "esp", "english", "math", "science", 
+            "filipino", "ap", "ep", "mapeh", "average"
+          ].includes(key))
+          .map(([subject, grade]) => ({
+            subject: subjectDisplayNames[subject] || subject,
+            grade: grade || "N/A"
+          }));
+        
+        setFilteredGrades(formattedGrades);
+      } else {
+        setFilteredGrades([]);
+      }
+    } catch (error) {
+      console.error("Error in fetchGrades:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refetch grades when school year or quarter changes
+  useEffect(() => {
+    if (studentInfo.name) {
+      fetchGrades(studentInfo.name, schoolYear, quarter);
+    }
+  }, [schoolYear, quarter, studentInfo.name]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -74,14 +127,9 @@ const StudentDashboard = () => {
         {/* Student Info */}
         <div className="bg-white p-4 shadow-md rounded-md mb-4 flex justify-between">
           <div className="flex items-center space-x-4">
-            <img
-              src={studentInfo.avatar}
-              alt="Student Avatar"
-              className="w-16 h-16 rounded-full border-2 border-gray-300"
-            />
             <div>
               <h2 className="text-xl font-semibold">{studentInfo.name}</h2>
-              <p className="text-sm text-gray-500">ID: {studentInfo.id}</p>
+              <p className="text-sm text-gray-500">ID: {studentInfo.lrn}</p>
               <p className="text-sm text-gray-500">
                 Section: {studentInfo.section}
               </p>
@@ -100,8 +148,9 @@ const StudentDashboard = () => {
                 onChange={(e) => setSchoolYear(e.target.value)}
                 className="border border-gray-300 rounded-md p-2"
               >
-                <option value="2024-2025">2024-2025</option>
                 <option value="2025-2026">2025-2026</option>
+                <option value="2026-2027">2026-2027</option>
+                <option value="2027-2028">2027-2028</option>
               </select>
             </div>
 
@@ -115,10 +164,10 @@ const StudentDashboard = () => {
                 onChange={(e) => setQuarter(e.target.value)}
                 className="border border-gray-300 rounded-md p-2"
               >
-                <option value="1st">1st Quarter</option>
-                <option value="2nd">2nd Quarter</option>
-                <option value="3rd">3rd Quarter</option>
-                <option value="4th">4th Quarter</option>
+                <option value="1st Grading">1st Grading</option>
+                <option value="2nd Grading">2nd Grading</option>
+                <option value="3rd Grading">3rd Grading</option>
+                <option value="4th Grading">4th Grading</option>
               </select>
             </div>
           </div>
@@ -127,36 +176,40 @@ const StudentDashboard = () => {
         {/* Grades Table */}
         <div className="bg-white p-4 shadow-md rounded-md">
           <h3 className="text-lg font-semibold mb-2">
-            Grades for {quarter} Quarter ({schoolYear})
+            Grades for {quarter} ({schoolYear})
           </h3>
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 p-2">Subject</th>
-                <th className="border border-gray-300 p-2">Grade</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredGrades.length > 0 ? (
-                filteredGrades.map((grade, index) => (
-                  <tr key={index} className="text-center">
-                    <td className="border border-gray-300 p-2">
-                      {grade.subject}
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      {grade.grade}
+          {loading ? (
+            <p className="text-center p-4">Loading grades...</p>
+          ) : (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-300 p-2">Subject</th>
+                  <th className="border border-gray-300 p-2">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredGrades.length > 0 ? (
+                  filteredGrades.map((grade, index) => (
+                    <tr key={index} className={grade.subject === "General Average" ? "font-bold bg-gray-100 text-center" : "text-center"}>
+                      <td className="border border-gray-300 p-2">
+                        {grade.subject}
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        {grade.grade}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="2" className="text-center p-4 text-gray-500">
+                      No grades available for this quarter and school year
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="2" className="text-center p-4 text-gray-500">
-                    No grades available for this quarter and school year
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </main>
     </div>

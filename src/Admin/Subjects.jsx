@@ -1,100 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { FiPlusCircle, FiEdit } from "react-icons/fi";
+import supabase from "../SupabaseClient.jsx";
 
 const Subjects = () => {
-  const [subjects, setSubjects] = useState([
-    {
-      id: 1,
-      subject: "Mathematics",
-      applicableFor: "Grade 10",
-      description: "Mathematics for Grade 10 students.",
-    },
-    {
-      id: 2,
-      subject: "English",
-      applicableFor: "All",
-      description: "English subject for all grade levels.",
-    },
-    {
-      id: 3,
-      subject: "Science",
-      applicableFor: "Grade 9",
-      description: "Science subject for Grade 9 students.",
-    },
-  ]);
-
+  const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [newSubject, setNewSubject] = useState({
-    subject: "",
-    applicableFor: "",
-    description: "",
-  });
 
-  const [editedSubject, setEditedSubject] = useState({
-    subject: "",
-    applicableFor: "",
-    description: "",
-  });
 
-  // Handle Filter Dropdown change
-  const filteredSubjects = selectedSubject
-    ? subjects.filter(
-        (subject) =>
-          subject.subject === selectedSubject || selectedSubject === "All"
-      )
-    : subjects;
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
 
-  // Handle Add New Subject
-  const addSubject = () => {
-    if (
-      !newSubject.subject ||
-      !newSubject.applicableFor ||
-      !newSubject.description
-    ) {
-      alert("Please fill all fields!");
-      return;
-    }
-
-    const newEntry = {
-      id: subjects.length + 1,
-      ...newSubject,
-    };
-
-    setSubjects([...subjects, newEntry]);
-    setIsAddModalOpen(false);
-    setNewSubject({ subject: "", applicableFor: "", description: "" });
+  const fetchSubjects = async () => {
+    const { data } = await supabase.from("Subjects").select("*");
+    setSubjects(data);
   };
-
-  // Handle Edit Subject
-  const editSubject = (subject) => {
-    setEditedSubject(subject);
-    setIsEditModalOpen(true);
-  };
-
-  const updateSubject = () => {
-    setSubjects((prev) =>
-      prev.map((subject) =>
-        subject.id === editedSubject.id ? editedSubject : subject
-      )
-    );
-    setIsEditModalOpen(false);
-    setEditedSubject({
-      subject: "",
-      applicableFor: "",
-      description: "",
-    });
-  };
-
-  // Get distinct subjects for the filter dropdown (including "All" option)
-  const subjectOptions = [
-    "All",
-    ...new Set(subjects.map((subject) => subject.subject)),
-  ];
-
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -104,27 +28,6 @@ const Subjects = () => {
         {/* Header Section & Dropdown Filter for Subject */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Manage Subjects</h2>
-
-          <div className="flex justify-end gap-2">
-            <select
-              className="p-2 border rounded w-full bg-white border-gray-400"
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              value={selectedSubject}
-            >
-              {subjectOptions.map((subject, index) => (
-                <option key={index} value={subject}>
-                  {subject}
-                </option>
-              ))}
-            </select>
-            <button
-              className="btn bg-[#333] text-white flex items-center"
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              <FiPlusCircle size={18} />
-              Add Subject
-            </button>
-          </div>
         </div>
 
         {/* Table */}
@@ -132,26 +35,13 @@ const Subjects = () => {
           <table className="table">
             <thead>
               <tr>
-                <th>Subject</th>
-                <th>Applicable For</th>
-                <th>Description</th>
-                <th>Actions</th>
+                <th>Subjects List</th>
               </tr>
             </thead>
             <tbody>
-              {filteredSubjects.map((subject) => (
+              {subjects.map((subject) => (
                 <tr key={subject.id} className="border-t">
-                  <td className="p-3">{subject.subject}</td>
-                  <td className="p-3">{subject.applicableFor}</td>
-                  <td className="p-3">{subject.description}</td>
-                  <td className="p-3">
-                    <button
-                      className="btn btn-sm btn-info text-white"
-                      onClick={() => editSubject(subject)}
-                    >
-                      <FiEdit className="inline-block" /> Edit
-                    </button>
-                  </td>
+                  <td className="p-3">{subject.subject_name}</td>
                 </tr>
               ))}
             </tbody>

@@ -5,6 +5,7 @@ import { RiLogoutCircleLine } from "react-icons/ri";
 import { FiMoreVertical } from "react-icons/fi";
 
 const StudentSidebar = () => {
+  const studentName = sessionStorage.getItem("name");
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
@@ -44,13 +45,6 @@ const StudentSidebar = () => {
           <div className="flex justify-center text-xl tracking-wider font-bold">
             Grade<span className="text-yellow-400">Ease</span>
           </div>
-          <div className="flex items-center">
-            <img
-              src="admin.png"
-              alt="User Avatar"
-              className="w-8 h-8 rounded-full border-2 border-gray-600"
-            />
-          </div>
         </div>
       </div>
 
@@ -68,15 +62,8 @@ const StudentSidebar = () => {
 
         {/* User info - hidden on mobile */}
         <div className="hidden md:flex items-center px-4 py-3 border-b border-[#2a3441]">
-          <div className="flex-shrink-0">
-            <img
-              src="https://randomuser.me/api/portraits/men/32.jpg"
-              alt="User Avatar"
-              className="w-10 h-10 rounded-full border-2 border-gray-600"
-            />
-          </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-white">Marc Gerasmio</p>
+            <p className="text-sm font-medium text-white">{studentName}</p>
             <p className="text-xs text-yellow-500">Student</p>
           </div>
           <button className="p-1 rounded-full hover:bg-[#2a3441]">

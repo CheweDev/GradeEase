@@ -1,30 +1,50 @@
 import { useEffect, useState } from "react";
+import supabase from "../SupabaseClient.jsx";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 
 const UserAccounts = () => {
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search input
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Fetch user accounts (replace with API call)
     const fetchUsers = async () => {
-      const data = [
-        { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-        { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User" },
-      ];
-      setUsers(data);
+      const { data, error } = await supabase.from("Users").select("id, name, email, role, status");
+      if (error) {
+        console.error("Error fetching users:", error);
+      } else {
+        setUsers(data);
+      }
     };
 
     fetchUsers();
   }, []);
 
-  // Filter users based on search input
+  const handleBlock = async (userId, currentStatus) => {
+    const newStatus = currentStatus === "Blocked" ? "Active" : "Blocked";
+
+    const { error } = await supabase
+      .from("Users")
+      .update({ status: newStatus })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Error updating status:", error);
+    } else {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+      user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -34,39 +54,42 @@ const UserAccounts = () => {
         <Header />
         <div className="flex justify-between mb-5">
           <h2 className="text-2xl font-semibold">Manage User Accounts</h2>
-          <div className="flex justify-end">
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 border bg-white rounded-md"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 border bg-white rounded-md"
+          />
         </div>
 
         <div className="bg-white p-4 shadow rounded-lg">
-          <table className="table">
+          <table className="w-full border-collapse">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
+              <tr className="bg-gray-200">
+                <th className="p-2 border">Name</th>
+                <th className="p-2 border">Email</th>
+                <th className="p-2 border">Role</th>
+                <th className="p-2 border">Status</th>
+                <th className="p-2 border">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="p-2">{user.id}</td>
-                    <td className="p-2">{user.name}</td>
-                    <td className="p-2">{user.email}</td>
-                    <td className="p-2">{user.role}</td>
-                    <td className="p-2">
-                      <button className="btn btn-neutral text-white btn-sm mr-2">
-                        Block
+                  <tr key={user.id} className="text-center">
+                    <td className="p-2 border">{user.name}</td>
+                    <td className="p-2 border">{user.email}</td>
+                    <td className="p-2 border">{user.role}</td>
+                    <td className="p-2 border">{user.status}</td>
+                    <td className="p-2 border">
+                      <button
+                        onClick={() => handleBlock(user.id, user.status)}
+                        className={`btn btn-sm mr-2 ${
+                          user.status === "Blocked" ? "btn-success" : "btn-neutral"
+                        } text-white`}
+                      >
+                        {user.status === "Blocked" ? "Unblock" : "Block"}
                       </button>
                       <button className="btn btn-error text-white btn-sm">
                         Delete
@@ -76,7 +99,7 @@ const UserAccounts = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center p-4">
+                  <td colSpan="6" className="text-center p-4">
                     No users found
                   </td>
                 </tr>

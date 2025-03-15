@@ -1,23 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StudentSidebar from "./StudentSidebar.jsx";
 import Header from "../Admin/Header.jsx";
 import { IoIosEye } from "react-icons/io";
 import { IoIosEyeOff } from "react-icons/io";
+import supabase from "../SupabaseClient.jsx";
 
 // Dummy data for student profile
 const StudentProfile = () => {
-  const [studentInfo, setStudentInfo] = useState({
-    name: "John Doe",
-    id: "20241001",
-    section: "Grade 10 - A",
-    gradeLevel: "10",
-    email: "johndoe@email.com",
-    contact: "+1 234 567 890",
-    dob: "2005-08-15",
-    address: "1234 Student Ave, Cityville",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg", // Dummy avatar URL
-  });
-
+  const [studentInfo, setStudentInfo] = useState([]);
+  const studentName = sessionStorage.getItem("name");
   const [editableInfo, setEditableInfo] = useState({ ...studentInfo });
   const [imagePreview, setImagePreview] = useState(studentInfo.avatar);
   const [password, setPassword] = useState({
@@ -25,6 +16,64 @@ const StudentProfile = () => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    fetchStudentData();
+  }, []);
+
+  const fetchStudentData = async () => {
+    const { data } = await supabase.from("Student Data")
+    .select("*")
+    .eq("name", studentName)
+    .single();
+    setStudentInfo(data);
+  };
+
+  const fetchPasswordData = async (e) => {
+    e.preventDefault();
+    
+    const { data, error } = await supabase
+        .from("Users")
+        .select("*")
+        .eq("name", studentName)
+        .single();
+
+    if (error) {
+        console.error("Error fetching data:", error);
+        return;
+    }
+
+    if (!data || data.password !== password.oldPassword) {
+        alert("Password Incorrect");
+        return;
+    }
+
+    if (password.newPassword !== password.confirmPassword) {
+        alert("New password and confirm password do not match");
+        return;
+    }
+
+    updatePassword(); 
+};
+
+
+const updatePassword = async () => {
+  const { data, error } = await supabase
+    .from("Users")
+    .update({
+      password: password.newPassword,
+    })
+    .eq("name", studentName);
+  if (error) {
+    console.error("Error inserting data:", error);
+    alert("Error inserting data");
+  } else {
+    console.log("Data inserted successfully:", data);
+    window.location.reload();
+  }
+};
+
+
 
   // Show/Hide password state
   const [showOldPassword, setShowOldPassword] = useState(false);
@@ -37,30 +86,11 @@ const StudentProfile = () => {
     setEditableInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle image change (upload)
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setEditableInfo((prev) => ({ ...prev, avatar: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   // Handle password input changes
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPassword((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Submit updated profile information
-  const handleSubmitProfile = (e) => {
-    e.preventDefault();
-    setStudentInfo(editableInfo);
-    document.getElementById("my_modal_3").close(); // Close the profile edit modal
   };
 
   // Submit password change
@@ -82,28 +112,15 @@ const StudentProfile = () => {
           <div className="flex items-center justify-between mb-4">
             {/* Avatar and Name */}
             <div className="flex items-center space-x-4">
-              <img
-                src={studentInfo.avatar}
-                alt="Student Avatar"
-                className="w-16 h-16 rounded-full border-2 border-gray-300"
-              />
               <div>
                 <h2 className="text-3xl font-semibold text-gray-800">
                   {studentInfo.name}
                 </h2>
-                <p className="text-sm text-gray-500">ID: {studentInfo.id}</p>
+                <p className="text-sm text-gray-500">LRN: {studentInfo.lrn}</p>
               </div>
             </div>
             {/* Edit Profile Button */}
             <div className="flex gap-3">
-              <button
-                className="btn btn-sm btn-outline"
-                onClick={() =>
-                  document.getElementById("my_modal_3").showModal()
-                }
-              >
-                Edit Profile
-              </button>
               {/* Change Password Button */}
               <button
                 className="btn btn-sm btn-outline"
@@ -119,7 +136,7 @@ const StudentProfile = () => {
           <div className="divider"></div>
 
           {/* Profile Card Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-100 transition duration-300">
               <p className="text-lg font-medium text-gray-600">Section</p>
               <p className="text-lg text-gray-800">{studentInfo.section}</p>
@@ -127,111 +144,22 @@ const StudentProfile = () => {
 
             <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-100 transition duration-300">
               <p className="text-lg font-medium text-gray-600">Grade Level</p>
-              <p className="text-lg text-gray-800">{studentInfo.gradeLevel}</p>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-100 transition duration-300">
-              <p className="text-lg font-medium text-gray-600">Email</p>
-              <p className="text-lg text-gray-800">{studentInfo.email}</p>
+              <p className="text-lg text-gray-800">{studentInfo.grade}</p>
             </div>
           </div>
 
           {/* Additional Information */}
           <div className="mt-8 space-y-6">
             <div className="flex justify-between items-center">
-              <p className="text-lg text-gray-700 font-medium">Contact</p>
-              <p className="text-lg text-gray-500">{studentInfo.contact}</p>
+              <p className="text-lg text-gray-700 font-medium">Guardian</p>
+              <p className="text-lg text-gray-500">{studentInfo.guardian}</p>
             </div>
             <div className="flex justify-between items-center">
-              <p className="text-lg text-gray-700 font-medium">Date of Birth</p>
-              <p className="text-lg text-gray-500">{studentInfo.dob}</p>
-            </div>
-            <div className="flex justify-between items-center">
-              <p className="text-lg text-gray-700 font-medium">Address</p>
-              <p className="text-lg text-gray-500">{studentInfo.address}</p>
+              <p className="text-lg text-gray-700 font-medium">Contact Number</p>
+              <p className="text-lg text-gray-500">{studentInfo.contact_number}</p>
             </div>
           </div>
         </div>
-
-        {/* Edit Profile Modal */}
-        <dialog id="my_modal_3" className="modal">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Edit Profile</h3>
-            <form method="dialog" onSubmit={handleSubmitProfile}>
-              <button
-                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                onClick={() => document.getElementById("my_modal_3").close()}
-              >
-                ✕
-              </button>
-
-              {/* Form Fields */}
-              <div className="space-y-4 mt-4">
-                <div>
-                  <label className="block text-gray-700">Profile Picture</label>
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={imagePreview}
-                      alt="Profile"
-                      className="w-20 h-20 rounded-full border-2 border-gray-300"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="file-input file-input-bordered w-full max-w-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={editableInfo.name}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700">Section</label>
-                  <input
-                    type="text"
-                    name="section"
-                    value={editableInfo.section}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700">Grade Level</label>
-                  <input
-                    type="text"
-                    name="gradeLevel"
-                    value={editableInfo.gradeLevel}
-                    onChange={handleInputChange}
-                    className="input input-bordered w-full"
-                  />
-                </div>
-              </div>
-
-              {/* Modal Footer with buttons */}
-              <div className="modal-action">
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => document.getElementById("my_modal_3").close()}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn bg-[#333] text-white">
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </dialog>
 
         {/* Change Password Modal */}
         <dialog id="change_password_modal" className="modal">
@@ -323,7 +251,7 @@ const StudentProfile = () => {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn bg-[#333] text-white">
+                <button onClick={fetchPasswordData} className="btn bg-[#333] text-white">
                   Change Password
                 </button>
               </div>

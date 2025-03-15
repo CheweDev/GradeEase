@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
+import supabase from "../SupabaseClient";
 
 const ProficiencyDistribution = () => {
-  // Sample data based on what appears to be in the image
+  const [grade1, setGrade1] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
+  const [grade2, setGrade2] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
+  const [grade3, setGrade3] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
+  const [grade4, setGrade4] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
+  const [grade5, setGrade5] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
+  const [grade6, setGrade6] = useState({ total: 0, outstanding: 0, very_satisfactory: 0, satisfactory: 0, fairly_satisfactory:0, failed:0});
   const [data, setData] = useState({
     categories: [
       {
@@ -35,79 +41,138 @@ const ProficiencyDistribution = () => {
         textColor: "text-white",
       },
     ],
-    grades: [
-      {
-        name: "Grade 1",
-        totalStudents: 86,
-        distribution: {
-          Outstanding: 22,
-          "Very Satisfactory": 28,
-          Satisfactory: 19,
-          "Fairly Satisfactory": 10,
-          "Did not meet expectation": 7,
-        },
-      },
-      {
-        name: "Grade 2",
-        totalStudents: 73,
-        distribution: {
-          Outstanding: 18,
-          "Very Satisfactory": 25,
-          Satisfactory: 15,
-          "Fairly Satisfactory": 12,
-          "Did not meet expectation": 3,
-        },
-      },
-      {
-        name: "Grade 3",
-        totalStudents: 65,
-        distribution: {
-          Outstanding: 15,
-          "Very Satisfactory": 22,
-          Satisfactory: 18,
-          "Fairly Satisfactory": 7,
-          "Did not meet expectation": 3,
-        },
-      },
-      {
-        name: "Grade 4",
-        totalStudents: 60,
-        distribution: {
-          Outstanding: 12,
-          "Very Satisfactory": 20,
-          Satisfactory: 15,
-          "Fairly Satisfactory": 8,
-          "Did not meet expectation": 5,
-        },
-      },
-      {
-        name: "Grade 5",
-        totalStudents: 50,
-        distribution: {
-          Outstanding: 10,
-          "Very Satisfactory": 18,
-          Satisfactory: 14,
-          "Fairly Satisfactory": 12,
-          "Did not meet expectation": 4,
-        },
-      },
-      {
-        name: "Grade 6",
-        totalStudents: 57,
-        distribution: {
-          Outstanding: 9,
-          "Very Satisfactory": 15,
-          Satisfactory: 13,
-          "Fairly Satisfactory": 14,
-          "Did not meet expectation": 6,
-        },
-      },
-    ],
+    grades: [],
   });
+  
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+  
+  const fetchStudents = async () => {
+    const { data, error } = await supabase.from("Grades").select("*");
+  
+    if (error) {
+      console.error("Error fetching students:", error);
+      return;
+    }
+  
+    const grades = ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"];
+    const gradeStats = {};
+  
+    grades.forEach(grade => {
+      const total = data.filter(student => student.grade === grade).length;
+      const outstanding = data.filter(student => student.grade === grade && student.average >= 90).length;
+      const verySatisfactory = data.filter(student => student.grade === grade && student.average >= 85 && student.average <= 89).length;
+      const satisfactory = data.filter(student => student.grade === grade && student.average >= 80 && student.average <= 84).length;
+      const fairlySatisfactory = data.filter(student => student.grade === grade && student.average >= 75 && student.average <= 79).length;
+      const failed = data.filter(student => student.grade === grade && student.average <= 74).length;
+  
+      gradeStats[grade] = {
+        total,
+        outstanding,
+        very_satisfactory: verySatisfactory,
+        satisfactory,
+        fairly_satisfactory: fairlySatisfactory,
+        failed
+      };
+    });
+  
+    setGrade1(prevState => ({
+      ...prevState,
+      ...gradeStats["Grade 1"]
+    }));
+    
+    setGrade2(gradeStats["Grade 2"]);
+    setGrade3(gradeStats["Grade 3"]);
+    setGrade4(gradeStats["Grade 4"]);
+    setGrade5(gradeStats["Grade 5"]);
+    setGrade6(gradeStats["Grade 6"]);
+  };
+  
+  
 
+  useEffect(() => {
+    setData(prevData => ({
+      ...prevData,
+      grades: [
+        {
+          name: "Grade 1",
+          totalStudents: grade1.total,
+          distribution: {
+            Outstanding: grade1.outstanding,
+            "Very Satisfactory": grade1.very_satisfactory,
+            Satisfactory: grade1.satisfactory,
+            "Fairly Satisfactory": grade1.fairly_satisfactory,
+            "Did not meet expectation": grade1.failed,
+          },
+        },
+        {
+          name: "Grade 2",
+          totalStudents: grade2.total,
+          distribution: {
+            Outstanding: grade2.outstanding,
+            "Very Satisfactory": grade2.very_satisfactory,
+            Satisfactory: grade2.satisfactory,
+            "Fairly Satisfactory": grade2.fairly_satisfactory,
+            "Did not meet expectation": grade2.failed,
+          },
+        },
+        {
+          name: "Grade 3",
+          totalStudents: grade3.total,
+          distribution: {
+            Outstanding: grade3.outstanding,
+            "Very Satisfactory": grade3.very_satisfactory,
+            Satisfactory: grade3.satisfactory,
+            "Fairly Satisfactory": grade3.fairly_satisfactory,
+            "Did not meet expectation": grade3.failed,
+          },
+        },
+        {
+          name: "Grade 4",
+          totalStudents: grade4.total,
+          distribution: {
+            Outstanding: grade4.outstanding,
+            "Very Satisfactory": grade4.very_satisfactory,
+            Satisfactory: grade4.satisfactory,
+            "Fairly Satisfactory": grade4.fairly_satisfactory,
+            "Did not meet expectation": grade4.failed,
+          },
+        },
+        {
+          name: "Grade 5",
+          totalStudents: grade5.total,
+          distribution: {
+            Outstanding: grade5.outstanding,
+            "Very Satisfactory": grade5.very_satisfactory,
+            Satisfactory: grade5.satisfactory,
+            "Fairly Satisfactory": grade5.fairly_satisfactory,
+            "Did not meet expectation": grade5.failed,
+          },
+        },
+        {
+          name: "Grade 6",
+          totalStudents: grade6.total,
+          distribution: {
+            Outstanding: grade6.outstanding,
+            "Very Satisfactory": grade6.very_satisfactory,
+            Satisfactory: grade6.satisfactory,
+            "Fairly Satisfactory": grade6.fairly_satisfactory,
+            "Did not meet expectation": grade6.failed,
+          },
+        },
+      ],
+    }));
+  }, [grade1]); // Runs only when `grade1.total` changes
+  
+
+  const [grading, setGrading] = useState("1st Grading");
   const [viewMode, setViewMode] = useState("count"); // 'count', 'percentage', or 'bars'
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [screenSize, setScreenSize] = useState("lg");
+  
+
+ 
 
   // Monitor screen size for responsive adjustments
   useEffect(() => {
@@ -185,7 +250,7 @@ const ProficiencyDistribution = () => {
     <div className="p-2 sm:p-4 lg:p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-lg mt-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl lg:text-xl font-bold text-gray-700 mb-2 sm:mb-0">
-          Proficiency Report 1st Quarter 2024-2025
+          Proficiency Report
         </h2>
         <div className="inline-flex rounded overflow-hidden border border-gray-300">
           <button
@@ -452,90 +517,6 @@ const ProficiencyDistribution = () => {
           </div>
         </div>
       )}
-
-      {/* School-wide summary */}
-      <div className="border rounded-lg p-2 sm:p-4 bg-blue-50">
-        <h3 className="text-base sm:text-xl font-bold mb-2 sm:mb-4">
-          School-wide Summary
-        </h3>
-        <div className="flex flex-col sm:flex-row justify-between gap-2">
-          <div className="text-xs sm:text-sm">
-            <p className="font-medium">
-              Total Students:{" "}
-              <span className="font-normal">{totalStudents}</span>
-            </p>
-            <p className="font-medium">
-              Overall Performance:{" "}
-              <span className="font-normal">
-                {Math.round(
-                  (categoryTotals["Outstanding"] * 95 +
-                    categoryTotals["Very Satisfactory"] * 87 +
-                    categoryTotals["Satisfactory"] * 82 +
-                    categoryTotals["Fairly Satisfactory"] * 77 +
-                    categoryTotals["Did not meet expectation"] * 72) /
-                    totalStudents
-                )}
-                % GPA
-              </span>
-            </p>
-          </div>
-
-          <div className="text-xs sm:text-sm">
-            <p className="font-medium">
-              Meeting Expectations:{" "}
-              <span className="font-normal">
-                {categoryTotals["Outstanding"] +
-                  categoryTotals["Very Satisfactory"] +
-                  categoryTotals["Satisfactory"] +
-                  categoryTotals["Fairly Satisfactory"]}{" "}
-                students (
-                {Math.round(
-                  ((categoryTotals["Outstanding"] +
-                    categoryTotals["Very Satisfactory"] +
-                    categoryTotals["Satisfactory"] +
-                    categoryTotals["Fairly Satisfactory"]) /
-                    totalStudents) *
-                    100
-                )}
-                %)
-              </span>
-            </p>
-            <p className="font-medium">
-              Outstanding Students:{" "}
-              <span className="font-normal">
-                {categoryTotals["Outstanding"]} (
-                {Math.round(
-                  (categoryTotals["Outstanding"] / totalStudents) * 100
-                )}
-                %)
-              </span>
-            </p>
-          </div>
-        </div>
-
-        {/* Mobile-friendly visualization */}
-        <div className="mt-3 sm:mt-4">
-          <div className="h-4 sm:h-6 w-full flex rounded-full overflow-hidden">
-            {data.categories.map((category, idx) => {
-              const percentage =
-                (categoryTotals[category.name] / totalStudents) * 100;
-              return (
-                <div
-                  key={idx}
-                  className={`${category.color}`}
-                  style={{ width: `${percentage}%` }}
-                  title={`${category.name}: ${Math.round(percentage)}%`}
-                ></div>
-              );
-            })}
-          </div>
-          <div className="flex justify-between mt-1 text-xs">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -6,7 +6,7 @@ import { FaSignInAlt } from "react-icons/fa";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("STUDENT");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const Login = () => {
 
     const { data: user, error } = await supabase
       .from("Users")
-      .select("email, password, role")
+      .select("*")
       .eq("email", email)
       .single();
 
@@ -38,10 +38,18 @@ const Login = () => {
       if (user.email === email) {
         if (user.password === password) {
           if (user.role === role) {
+            console.log(user)
             sessionStorage.setItem("userRole", user.role);
+            sessionStorage.setItem("name", user.name)
             navigate(
-              user.role === "ADMIN" ? "/admin-dashboard" : "/student-dashboard"
-            );
+              user.role === "ADMIN"
+                ? "/admin-dashboard"
+                : user.role === "TEACHER"
+                ? "/teacher-dashboard"
+                : user.role === "STUDENT"
+                ? "/student-dashboard"
+                : "/default-route" 
+            );            
           } else {
             openModal();
           }
@@ -189,6 +197,7 @@ const Login = () => {
                 onChange={(e) => setRole(e.target.value)}
               >
                 <option value="STUDENT">Student</option>
+                <option value="TEACHER">Teacher</option>
                 <option value="ADMIN">Admin</option>
               </select>
 

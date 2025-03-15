@@ -5,8 +5,38 @@ import { GiTeacher } from "react-icons/gi";
 import { TbChecklist } from "react-icons/tb";
 import { FaSchoolCircleCheck } from "react-icons/fa6";
 import ProficiencyDistribution from "./ProficiencyDistribution.jsx";
+import { useState, useEffect } from "react";
+import supabase from "../SupabaseClient.jsx";
 
 const AdminDashboard = () => {
+  const [studentCount, setStudentCount] = useState("");
+  const [teacherCount, setTeacherCount] = useState("");
+  const [gradeCount, setGradeCount] = useState("");
+  const [sectionCount, setSectionCount] = useState("");
+
+  useEffect(() => {
+    fetchStudents();
+    fetchTeachers();
+    fetchSections();
+  }, []);
+
+  const fetchStudents = async () => {
+    const { data } = await supabase.from("Student Data").select("*");
+    setStudentCount(data.length);
+  };
+
+  const fetchTeachers = async () => {
+    const { data } = await supabase.from("Advisers").select("*");
+    setTeacherCount(data.length);
+  };
+
+  const fetchSections = async () => {
+    const { data } = await supabase.from("Section").select("*");
+    setSectionCount(data.length);
+    const uniqueGradeLevels = new Set(data.map((item) => item.grade_level));
+    setGradeCount(uniqueGradeLevels.size);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -27,7 +57,7 @@ const AdminDashboard = () => {
                 <h2 className="card-title text-lg">Total Student</h2>
               </div>
               <div className="flex justify-center">
-                <h2 className="text-xl">01</h2>
+                <h2 className="text-xl">{studentCount}</h2>
               </div>
             </div>
           </div>
@@ -40,7 +70,7 @@ const AdminDashboard = () => {
                 <h2 className="card-title text-lg">Total Teacher</h2>
               </div>
               <div className="flex justify-center">
-                <h2 className="text-xl">02</h2>
+                <h2 className="text-xl">{teacherCount}</h2>
               </div>
             </div>
           </div>
@@ -53,7 +83,7 @@ const AdminDashboard = () => {
                 <h2 className="card-title text-lg">Total Grade</h2>
               </div>
               <div className="flex justify-center">
-                <h2 className="text-xl">03</h2>
+                <h2 className="text-xl">{gradeCount}</h2>
               </div>
             </div>
           </div>
@@ -66,7 +96,7 @@ const AdminDashboard = () => {
                 <h2 className="card-title text-lg">Total Section</h2>
               </div>
               <div className="flex justify-center">
-                <h2 className="text-xl">04</h2>
+                <h2 className="text-xl">{sectionCount}</h2>
               </div>
             </div>
           </div>

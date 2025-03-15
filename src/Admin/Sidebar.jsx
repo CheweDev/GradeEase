@@ -128,7 +128,7 @@ const Sidebar = () => {
             />
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-white">Marc Gerasmio</p>
+            <p className="text-sm font-medium text-white">Administrator</p>
             <p className="text-xs text-yellow-500">Super Admin</p>
           </div>
           <button className="p-1 rounded-full hover:bg-[#2a3441]">
@@ -205,7 +205,7 @@ const Sidebar = () => {
                       <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
                         <TbChecklist size={16} />
                       </span>
-                      <span className="flex-1">Manage Grade</span>
+                      <span className="flex-1">Grade Level</span>
                     </NavLink>
                   </li>
                   <li>

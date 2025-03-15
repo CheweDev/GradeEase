@@ -1,97 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TeacherSidebar from "./TeacherSidebar.jsx";
 import Header from "../Admin/Header.jsx";
-
-// Dummy
-const studentsData = [
-  {
-    id: "20241001",
-    name: "John Doe",
-    section: "Grade 10 - A",
-    gradeLevel: "10",
-    subjects: [
-      {
-        name: "Math",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "English",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "Science",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "History",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "Geography",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "Physics",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "Chemistry",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-      {
-        name: "Biology",
-        grades: {
-          firstQuarter: "",
-          secondQuarter: "",
-          thirdQuarter: "",
-          fourthQuarter: "",
-        },
-      },
-    ],
-  },
-];
+import supabase from "../SupabaseClient.jsx";
 
 const TeacherDashboard = () => {
-  const [students, setStudents] = useState(studentsData);
+  const adviserName = sessionStorage.getItem("name");
+  const [students, setStudents] = useState([]);
+  const [adviserSection, setAdviserSection] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedQuarter, setSelectedQuarter] = useState("firstQuarter");
-  const [grades, setGrades] = useState({});
+  const [grades, setGrades] = useState([]);
+  const [studentGrades, setStudentGrades] = useState([]);
+  const [newGrades, setNewGrade] = useState({
+    grading: "",
+    mtb_mle: "",
+    esp: "",
+    english: "",
+    math: "",
+    science: "",
+    filipino: "",
+    ap: "",
+    ep: "",
+    mapeh: "",
+    average: "",
+  });
+
+  useEffect(() => {
+    fetchAdvisers();
+  }, []);
+
+  const fetchAdvisers = async () => {
+    const { data } = await supabase
+    .from("Advisers")
+    .select("*")
+    .eq("name", adviserName)
+    .single();
+    fetchStudents(data.advisory);
+
+  };
+
+  const fetchStudents = async (advisory) => {
+    const { data } = await supabase.from("Student Data")
+    .select("*")
+    .eq("section", advisory);
+    setStudents(data);
+
+  };
+
+  const fetchStudentGrades = async (studentName, studentGrade) => {
+    const { data, error } = await supabase
+      .from("Grades")
+      .select("*")
+      .eq("name", studentName)
+      .eq("grade", studentGrade);
+
+    if (error) {
+      console.error("Error fetching grades:", error);
+      return;
+    }
+
+    setStudentGrades(data || []);
+  };
 
   // Handle quarter selection change
   const handleQuarterChange = (quarter) => {
@@ -109,30 +79,39 @@ const TeacherDashboard = () => {
     }));
   };
 
-  // Handle submitting grades for each subject
-  const handleGradeSubmit = (e) => {
+  const handleGradeSubmit = async (e) => {
     e.preventDefault();
-    const updatedStudents = students.map((student) => {
-      if (student.id === selectedStudent.id) {
-        return {
-          ...student,
-          subjects: student.subjects.map((subject) => {
-            if (grades[subject.name]) {
-              return {
-                ...subject,
-                grades: { ...grades[subject.name] },
-              };
-            }
-            return subject;
-          }),
-        };
-      }
-      return student;
-    });
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    const school_year = `${currentYear}-${nextYear}`;
+    const { data, error } = await supabase.from("Grades").insert([
+      {
+        name: selectedStudent.name,
+        section: selectedStudent.section,
+        grade: selectedStudent.grade,
+        grading: newGrades.grading,
+        school_year,
+        mtb_mle: newGrades.mtb_mle,
+        esp: newGrades.esp,
+        english: newGrades.english,
+        math: newGrades.math,
+        science: newGrades.science,
+        filipino: newGrades.filipino,
+        ap: newGrades.ap,
+        epp: newGrades.epp,
+        mapeh: newGrades.mapeh,
+        average: newGrades.average,
+        gender: selectedStudent.gender,
 
-    setStudents(updatedStudents);
-    alert(`Grades saved for ${selectedStudent.name}`);
-    document.getElementById("grade_modal").close();
+      },
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
   };
 
   // Handle search query change
@@ -143,9 +122,14 @@ const TeacherDashboard = () => {
   // Filter students by LRN or name
   const filteredStudents = students.filter(
     (student) =>
-      student.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.lrn.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const getGradeForSubject = (subject, gradingPeriod) => {
+    const gradeEntry = studentGrades.find(grade => grade.grading === gradingPeriod);
+    return gradeEntry ? gradeEntry[subject] : "-";
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -177,19 +161,16 @@ const TeacherDashboard = () => {
               <tr>
                 <th>LRN</th>
                 <th>Name</th>
-                <th>Section</th>
-                <th>Grade Level</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.map((student) => (
+            {filteredStudents.length > 0 ? (
+              filteredStudents.map((student) => (
                 <tr key={student.id}>
-                  <td>{student.id}</td>
+                  <td>{student.lrn}</td>
                   <td>{student.name}</td>
-                  <td>{student.section}</td>
-                  <td>{student.gradeLevel}</td>
-                  <td>
+                  <td className="flex gap-2">
                     <button
                       className="btn btn-sm btn-outline"
                       onClick={() => {
@@ -199,10 +180,28 @@ const TeacherDashboard = () => {
                     >
                       Add Grades
                     </button>
+                    <button
+                      className="btn btn-sm btn-outline btn-info"
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        fetchStudentGrades(student.name, student.grade);
+                        document.getElementById("view_grades_modal").showModal();
+                      }}
+                    >
+                      View Grades
+                    </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" className="text-center p-4 text-gray-500">
+                  No students found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+
           </table>
         </div>
 
@@ -212,43 +211,6 @@ const TeacherDashboard = () => {
             <h3 className="font-bold text-lg">
               Add Grades for {selectedStudent?.name}
             </h3>
-
-            {/* Tabs for Quarters */}
-            <div className="tabs mb-6">
-              <button
-                className={`tab ${
-                  selectedQuarter === "firstQuarter" ? "tab-active" : ""
-                }`}
-                onClick={() => handleQuarterChange("firstQuarter")}
-              >
-                1st Quarter
-              </button>
-              <button
-                className={`tab ${
-                  selectedQuarter === "secondQuarter" ? "tab-active" : ""
-                }`}
-                onClick={() => handleQuarterChange("secondQuarter")}
-              >
-                2nd Quarter
-              </button>
-              <button
-                className={`tab ${
-                  selectedQuarter === "thirdQuarter" ? "tab-active" : ""
-                }`}
-                onClick={() => handleQuarterChange("thirdQuarter")}
-              >
-                3rd Quarter
-              </button>
-              <button
-                className={`tab ${
-                  selectedQuarter === "fourthQuarter" ? "tab-active" : ""
-                }`}
-                onClick={() => handleQuarterChange("fourthQuarter")}
-              >
-                4th Quarter
-              </button>
-            </div>
-
             {/* Form for Grades */}
             <form onSubmit={handleGradeSubmit}>
               <button
@@ -258,37 +220,156 @@ const TeacherDashboard = () => {
               >
                 ✕
               </button>
+              <label className="block mb-4 mt-4">
+                <span>Select Grading</span>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={newGrades.grading}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, grading: e.target.value })
+                  }
+                >
+                  <option value="" disabled>Select Grading Period</option>
+                  <option value="1st Grading">1st Grading</option>
+                  <option value="2nd Grading">2nd Grading</option>
+                  <option value="3rd Grading">3rd Grading</option>
+                  <option value="4th Grading">4th Grading</option>
+                </select>
+              </label>
 
-              {/* Subjects Grades Table */}
-              <div className="overflow-x-auto">
-                <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Subject</th>
-                      <th>Grade</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedStudent?.subjects.map((subject) => (
-                      <tr key={subject.name}>
-                        <td>{subject.name}</td>
-                        <td>
-                          <input
-                            type="number"
-                            value={
-                              grades[subject.name]?.[selectedQuarter] || ""
-                            }
-                            onChange={(e) =>
-                              handleGradeChange(subject.name, e.target.value)
-                            }
-                            className="input input-bordered w-full"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-2">
+                <span>MTB-MLE</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.mtb_mle}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, mtb_mle: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>ESP</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.esp}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, esp: e.target.value })
+                  }
+                />
+              </label>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-2">
+                <span>English</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.english}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, english: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>Math</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                   placeholder="Enter Grade"
+                  value={newGrades.math}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, math: e.target.value })
+                  }
+                />
+              </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-2">
+                <span>Science</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.science}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, science: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>Filipino</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.filipino}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, filipino: e.target.value })
+                  }
+                />
+              </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-2">
+                <span>AP</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.ap}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, ap: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>EPP</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.epp}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, epp: e.target.value })
+                  }
+                />
+              </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-2">
+                <span>MAPEH</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.mapeh}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, mapeh: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>Average</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.average}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, average: e.target.value })
+                  }
+                />
+              </label>
+              </div>
+
+      
 
               {/* Modal Footer */}
               <div className="modal-action">
@@ -306,6 +387,116 @@ const TeacherDashboard = () => {
             </form>
           </div>
         </dialog>
+
+        {/* View Grades Modal */}
+<dialog id="view_grades_modal" className="modal">
+  <div className="modal-box max-w-4xl">
+    <h3 className="font-bold text-lg mb-4">
+      Grades for {selectedStudent?.name}
+    </h3>
+    <button
+      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+      onClick={() => document.getElementById("view_grades_modal").close()}
+    >
+      ✕
+    </button>
+    
+    <div className="overflow-x-auto">
+      <table className="table w-full border">
+        <thead>
+          <tr>
+            <th className="border bg-gray-100">Subject</th>
+            <th className="border bg-gray-100">1st Grading</th>
+            <th className="border bg-gray-100">2nd Grading</th>
+            <th className="border bg-gray-100">3rd Grading</th>
+            <th className="border bg-gray-100">4th Grading</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="border font-medium">MTB-MLE</td>
+            <td className="border text-center">{getGradeForSubject("mtb_mle", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mtb_mle", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mtb_mle", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mtb_mle", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">ESP</td>
+            <td className="border text-center">{getGradeForSubject("esp", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("esp", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("esp", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("esp", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">English</td>
+            <td className="border text-center">{getGradeForSubject("english", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("english", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("english", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("english", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">Math</td>
+            <td className="border text-center">{getGradeForSubject("math", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("math", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("math", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("math", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">Science</td>
+            <td className="border text-center">{getGradeForSubject("science", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("science", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("science", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("science", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">Filipino</td>
+            <td className="border text-center">{getGradeForSubject("filipino", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("filipino", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("filipino", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("filipino", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">AP</td>
+            <td className="border text-center">{getGradeForSubject("ap", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("ap", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("ap", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("ap", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">EPP</td>
+            <td className="border text-center">{getGradeForSubject("epp", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("epp", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("epp", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("epp", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">MAPEH</td>
+            <td className="border text-center">{getGradeForSubject("mapeh", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mapeh", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mapeh", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("mapeh", "4th Grading")}</td>
+          </tr>
+          <tr className="bg-gray-50">
+            <td className="border font-bold">Average</td>
+            <td className="border text-center font-bold">{getGradeForSubject("average", "1st Grading")}</td>
+            <td className="border text-center font-bold">{getGradeForSubject("average", "2nd Grading")}</td>
+            <td className="border text-center font-bold">{getGradeForSubject("average", "3rd Grading")}</td>
+            <td className="border text-center font-bold">{getGradeForSubject("average", "4th Grading")}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div className="modal-action">
+      <button
+        className="btn bg-[#333] text-white"
+        onClick={() => document.getElementById("view_grades_modal").close()}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</dialog>
       </main>
     </div>
   );

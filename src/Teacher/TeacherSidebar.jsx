@@ -5,6 +5,7 @@ import { RiLogoutCircleLine } from "react-icons/ri";
 import { FiMoreVertical } from "react-icons/fi";
 
 const TeacherSidebar = () => {
+  const name = sessionStorage.getItem("name");
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ const TeacherSidebar = () => {
             />
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-white">Krizia Dapal</p>
+            <p className="text-sm font-medium text-white">{name}</p>
             <p className="text-xs text-yellow-500">Teacher</p>
           </div>
           <button className="p-1 rounded-full hover:bg-[#2a3441]">

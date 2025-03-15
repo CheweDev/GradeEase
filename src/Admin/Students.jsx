@@ -1,41 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { FiEye, FiPlusCircle } from "react-icons/fi";
+import supabase from "../SupabaseClient.jsx";
 
 const Students = () => {
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      lrn: "123456789012",
-      name: "John Doe",
-      grade: "Grade 10",
-      section: "Section A",
-      profile: {
-        age: 16,
-        address: "123 Main St, City",
-        contact: "09123456789",
-        guardian: "Jane Doe",
-      },
-    },
-    {
-      id: 2,
-      lrn: "987654321098",
-      name: "Jane Smith",
-      grade: "Grade 9",
-      section: "Section B",
-      profile: {
-        age: 15,
-        address: "456 Elm St, Town",
-        contact: "09987654321",
-        guardian: "John Smith",
-      },
-    },
-  ]);
-
+  const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [sections, setSections] = useState([]);
+  const [schoolYear, setSchoolYear] = useState([]);
 
   // New Student Form State
   const [newStudent, setNewStudent] = useState({
@@ -43,42 +18,103 @@ const Students = () => {
     name: "",
     grade: "",
     section: "",
+    guardian: "",
+    contact_number: "",
+    school_year: "",
+    gender: "",
   });
 
-  // Filter students by name or LRN
+  useEffect(() => {
+    fetchSections();
+    fetchSchoolYear();
+    fetchStudents();
+  }, []);
+
+  const fetchSections = async () => {
+    const { data } = await supabase.from("Section").select("*");
+    setSections(data);
+  };
+
+  const fetchSchoolYear = async () => {
+    const { data } = await supabase.from("School Year").select("*");
+    setSchoolYear(data);
+  };
+
+  const fetchStudents = async () => {
+    const { data } = await supabase.from("Student Data").select("*");
+    setStudents(data);
+  };
+
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.lrn.includes(searchTerm)
   );
 
-  // Add New Student
-  const addStudent = () => {
-    if (
-      !newStudent.lrn ||
-      !newStudent.name ||
-      !newStudent.grade ||
-      !newStudent.section
-    ) {
-      alert("Please fill in all fields!");
-      return;
-    }
-
-    const newEntry = {
-      id: students.length + 1,
-      ...newStudent,
-      profile: {
-        age: "N/A",
-        address: "N/A",
-        contact: "N/A",
-        guardian: "N/A",
+  const addStudent = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase.from("Student Data").insert([
+      {
+        lrn: newStudent.lrn,
+        name: newStudent.name,
+        grade: newStudent.grade,
+        gender: newStudent.gender,
+        section: newStudent.section,
+        guardian: newStudent.guardian,
+        school_year: newStudent.school_year,
+        contact_number: newStudent.contact_number,
       },
-    };
-
-    setStudents([...students, newEntry]);
-    setIsAddModalOpen(false);
-    setNewStudent({ lrn: "", name: "", grade: "", section: "" });
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      createAccount();
+    }
   };
+
+  const createAccount = async () => {
+    const { data, error } = await supabase.from("Users").insert([
+      {
+        password: generateRandomPassword(),
+        name: newStudent.name,
+        role: "STUDENT",
+        email: `${newStudent.name?.toLowerCase().replace(/\s+/g, "")}@edu.ph`,
+        status: "Verified",
+      },
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
+  };
+
+  const generateRandomPassword = () => {
+    const length = 8;
+    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercase = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const allChars = uppercase + lowercase + numbers;
+  
+    let password =
+      uppercase[Math.floor(Math.random() * uppercase.length)] +
+      lowercase[Math.floor(Math.random() * lowercase.length)] +
+      numbers[Math.floor(Math.random() * numbers.length)];
+  
+ 
+    for (let i = 3; i < length; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    return password.split("").sort(() => Math.random() - 0.5).join("");
+  };
+  
+
+
+
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -151,8 +187,9 @@ const Students = () => {
         {/* Add Student Modal */}
         {isAddModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
-            <div className="bg-white p-6 rounded shadow-lg w-96">
+            <div className="bg-white p-6 rounded shadow-lg w-2/4">
               <h3 className="text-lg font-semibold mb-4">Add New Student</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <label className="block mb-2">
                 <span>LRN Number</span>
                 <input
@@ -177,30 +214,97 @@ const Students = () => {
                   }
                 />
               </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <label className="block mb-2">
                 <span>Grade Level</span>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade Level"
-                  value={newStudent.grade}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, grade: e.target.value })
-                  }
-                />
+                <select
+                className="w-full p-2 border rounded"
+                value={newStudent.grade}
+                onChange={(e) =>
+                  setNewStudent({ ...newStudent, grade: e.target.value })
+                }
+              >
+                <option value="" disabled>Select Grade Level</option>
+                {sections.map((item, index) => (
+                  <option key={index} value={item.grade_level}>{item.grade_level}</option>
+                ))}
+              </select>
               </label>
               <label className="block mb-4">
-                <span>Section</span>
+              <span>Section</span>
+              <select
+                className="w-full p-2 border rounded"
+                value={newStudent.section}
+                onChange={(e) =>
+                  setNewStudent({ ...newStudent, section: e.target.value })
+                }
+              >
+                <option value="" disabled>Select Section</option>
+                {sections.map((item, index) => (
+                  <option key={index} value={item.section}>{item.section}</option>
+                ))}
+              </select>
+            </label>
+              <label className="block mb-4">
+                <span>School Year</span>
+                <select
+                className="w-full p-2 border rounded"
+                value={newStudent.school_year}
+                onChange={(e) =>
+                  setNewStudent({ ...newStudent, school_year: e.target.value })
+                }
+              >
+                <option value="" disabled>Select School Year</option>
+                {schoolYear.map((item, index) => (
+                  <option key={index} value={item.school_year}>{item.school_year}</option>
+                ))}
+              </select>
+              </label>
+
+              <label className="block mb-4">
+                <span>Gender</span>
+                <select
+                  className="w-full p-2 border rounded"
+                  value={newStudent.gender}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, gender: e.target.value })
+                  }
+                >
+                  <option value="" disabled>Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <label className="block mb-4">
+                <span>Guardian's Name</span>
                 <input
                   type="text"
                   className="w-full p-2 border rounded"
                   placeholder="Enter Section"
-                  value={newStudent.section}
+                  value={newStudent.guardian}
                   onChange={(e) =>
-                    setNewStudent({ ...newStudent, section: e.target.value })
+                    setNewStudent({ ...newStudent, guardian: e.target.value })
                   }
                 />
               </label>
+
+              <label className="block mb-4">
+                <span>Guardian's Number</span>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Section"
+                  value={newStudent.contact_number}
+                  onChange={(e) =>
+                    setNewStudent({ ...newStudent, contact_number: e.target.value })
+                  }
+                />
+              </label>
+              </div>
 
               <div className="flex justify-end space-x-2">
                 <button
@@ -224,7 +328,7 @@ const Students = () => {
         {selectedStudent && (
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
             <div className="bg-white p-6 rounded shadow-lg w-96">
-              <h3 className="text-lg font-semibold mb-4">Student Profile</h3>
+              <h3 className="text-lg font-semibold mb-4">Student Details</h3>
               <p>
                 <strong>Name:</strong> {selectedStudent.name}
               </p>
@@ -238,18 +342,11 @@ const Students = () => {
                 <strong>Section:</strong> {selectedStudent.section}
               </p>
               <p>
-                <strong>Age:</strong> {selectedStudent.profile.age}
+                <strong>Guardian:</strong> {selectedStudent.guardian}
               </p>
               <p>
-                <strong>Address:</strong> {selectedStudent.profile.address}
+                <strong>Contact:</strong> {selectedStudent.contact_number}
               </p>
-              <p>
-                <strong>Contact:</strong> {selectedStudent.profile.contact}
-              </p>
-              <p>
-                <strong>Guardian:</strong> {selectedStudent.profile.guardian}
-              </p>
-
               <div className="flex justify-end mt-4">
                 <button
                   className="px-4 py-2 bg-gray-400 text-white rounded"
