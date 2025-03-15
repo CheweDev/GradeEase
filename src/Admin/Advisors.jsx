@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { IoAddCircleSharp } from "react-icons/io5";
@@ -21,11 +21,9 @@ const Advisors = () => {
   }, []);
 
   const fetchAdvisers = async () => {
-    const { data } = await supabase
-      .from("Advisers")
-      .select("*");
-    
-   setAdvisors(data);
+    const { data } = await supabase.from("Advisers").select("*");
+
+    setAdvisors(data);
   };
 
   // Open modal for adding/editing advisors
@@ -47,43 +45,40 @@ const Advisors = () => {
 
   const addAdvisor = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase
-        .from('Advisers')
-        .insert([
-          {
-           name,
-           advisory,
-           grade,
-          },
-        ])
-      if (error) {
-        console.error("Error inserting data:", error);
-        alert("Error inserting data");
-      } else {
-        console.log("Data inserted successfully:", data);
-        window.location.reload();
-      }
+    const { data, error } = await supabase.from("Advisers").insert([
+      {
+        name,
+        advisory,
+        grade,
+      },
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
   };
 
   // Update advisor
   const updateAdvisor = async (e) => {
     e.preventDefault();
     const { data, error } = await supabase
-        .from('Advisers')
-        .update(
-          {
-           name,
-           advisory,
-           grade,
-          })
-        .eq('id', editId)  
-      if (error) {
-        console.error("Error inserting data:", error);
-        alert("Error inserting data");
-      } else {
-        console.log("Data inserted successfully:", data);
-        window.location.reload();
-      }
+      .from("Advisers")
+      .update({
+        name,
+        advisory,
+        grade,
+      })
+      .eq("id", editId);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
   };
 
   // Filter logic
@@ -105,7 +100,7 @@ const Advisors = () => {
           <h2 className="text-2xl font-semibold">Manage Advisers</h2>
           <div className="flex gap-4 mb-4">
             <select
-              className="p-2 border rounded w-1/3"
+              className="p-2 border rounded w-1/3 bg-white border-gray-400"
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value)}
             >
@@ -118,7 +113,7 @@ const Advisors = () => {
             </select>
             <input
               type="text"
-              className="p-2 border rounded w-2/3"
+              className="p-2 border rounded w-2/3 bg-white border-gray-400"
               placeholder="Search by adviser name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

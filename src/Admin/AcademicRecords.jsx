@@ -105,7 +105,7 @@ const AcademicRecords = () => {
           <div>
             <input
               type="text"
-              className="p-2 border rounded w-full"
+              className="p-2 border rounded w-full bg-white border-gray-400"
               placeholder="Search by LRN or Name"
               value={searchQuery}
               onChange={handleSearchChange}

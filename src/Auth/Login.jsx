@@ -77,14 +77,14 @@ const Login = () => {
       <div
         className="hero min-h-screen"
         style={{
-          backgroundImage: "url(bg.jpg)",
+          backgroundImage: "url(bg4.jpg)",
         }}
       >
         <div className="hero-overlay"></div>
         <div className="w-full max-w-md p-8 rounded-lg relative z-10 backdrop-blur-sm bg-white/40 border border-white/40">
           <div className="flex justify-center content-center">
             <img
-              src="https://placehold.co/400"
+              src="logoo.png"
               alt="csu-logo"
               className="w-3/4 sm:w-2/3 md:w-1/2 lg:w-1/2 xl:w-1/3 2xl:w-1/4 object-contain"
             />

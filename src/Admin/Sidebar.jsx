@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { FaSchoolCircleCheck } from "react-icons/fa6";
 import { LiaSchoolSolid } from "react-icons/lia";
@@ -7,6 +7,8 @@ import { PiStudentFill } from "react-icons/pi";
 import { TbChecklist } from "react-icons/tb";
 import { FaAward } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
+import { RiLogoutCircleLine } from "react-icons/ri";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FiGrid,
   FiBarChart2,
@@ -19,13 +21,54 @@ import {
 } from "react-icons/fi";
 
 const Sidebar = () => {
-  const [isMasterListOpen, setIsMasterListOpen] = useState(false);
-  const [isReportsOpen, setIsReportsOpen] = useState(false);
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Retrieve stored state from localStorage or default to false
+  const [isMasterListOpen, setIsMasterListOpen] = useState(() => {
+    return JSON.parse(localStorage.getItem("isMasterListOpen")) || false;
+  });
+  const [isReportsOpen, setIsReportsOpen] = useState(() => {
+    return JSON.parse(localStorage.getItem("isReportsOpen")) || false;
+  });
 
-  const toggleMasterList = () => setIsMasterListOpen(!isMasterListOpen);
-  const toggleReports = () => setIsReportsOpen(!isReportsOpen);
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  // Update localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem("isMasterListOpen", JSON.stringify(isMasterListOpen));
+  }, [isMasterListOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("isReportsOpen", JSON.stringify(isReportsOpen));
+  }, [isReportsOpen]);
+
+  // Close sidebar on navigation (for mobile)
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Toggle functions
+  const toggleMasterList = () => setIsMasterListOpen((prev) => !prev);
+  const toggleReports = () => setIsReportsOpen((prev) => !prev);
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  const navigate = useNavigate();
+  const sessionClear = () => {
+    sessionStorage.clear();
+    navigate("/");
+  };
+
+  const openModal = () => {
+    const modal = document.getElementById("error_modal");
+    if (modal) {
+      modal.showModal();
+    }
+  };
+
+  const closeModal = () => {
+    const modal = document.getElementById("error_modal");
+    if (modal) {
+      modal.close();
+    }
+  };
 
   return (
     <aside className="flex flex-col md:flex-row max-h-screen lg:fixed lg:h-screen overflow-y-auto">
@@ -45,7 +88,7 @@ const Sidebar = () => {
 
           <div className="flex items-center">
             <img
-              src="https://placehold.co/400"
+              src="admin.png"
               alt="User Avatar"
               className="w-8 h-8 rounded-full border-2 border-gray-600"
             />
@@ -79,7 +122,7 @@ const Sidebar = () => {
         <div className="hidden md:flex items-center px-4 py-3 border-b border-[#2a3441]">
           <div className="flex-shrink-0">
             <img
-              src="https://placehold.co/400"
+              src="admin.png"
               alt="User Avatar"
               className="w-10 h-10 rounded-full border-2 border-gray-600"
             />
@@ -328,6 +371,19 @@ const Sidebar = () => {
                 <span className="flex-1">User</span>
               </NavLink>
             </li>
+
+            {/* Logout */}
+            <li>
+              <div
+                className="flex items-center px-4 py-2.5 text-sm cursor-pointer hover:bg-[#2a3441]"
+                onClick={openModal}
+              >
+                <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
+                  <RiLogoutCircleLine size={16} />
+                </span>
+                <span className="flex-1">Logout</span>
+              </div>
+            </li>
           </ul>
         </nav>
 
@@ -337,10 +393,29 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Main content area */}
-      <div className="flex-1 pt-14 md:pt-0">
-        {/* Your main content goes here */}
-      </div>
+      <dialog id="error_modal" className="modal">
+        <div className="modal-box">
+          <form method="dialog">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={closeModal}
+            >
+              ✕
+            </button>
+          </form>
+          <h3 className="font-bold text-base">Confirm Action</h3>
+          <p className="py-4">Are you sure you want to log out?</p>
+          <div className="flex justify-end content-end">
+            <button
+              className="btn btn-error text-white flex items-center"
+              onClick={sessionClear}
+            >
+              <RiLogoutCircleLine className="mr-2" />
+              Log Out
+            </button>
+          </div>
+        </div>
+      </dialog>
     </aside>
   );
 };

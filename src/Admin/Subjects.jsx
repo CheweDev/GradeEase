@@ -107,7 +107,7 @@ const Subjects = () => {
 
           <div className="flex justify-end gap-2">
             <select
-              className="p-2 border rounded w-full"
+              className="p-2 border rounded w-full bg-white border-gray-400"
               onChange={(e) => setSelectedSubject(e.target.value)}
               value={selectedSubject}
             >
@@ -281,7 +281,7 @@ const Subjects = () => {
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-[#333] text-white rounded"
                   onClick={updateSubject}
                 >
                   Update

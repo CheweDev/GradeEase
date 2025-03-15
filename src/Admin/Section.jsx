@@ -15,18 +15,15 @@ const Section = () => {
   const [selectedGrade, setSelectedGrade] = useState("");
   const [editId, setEditId] = useState("");
 
-    useEffect(() => {
-      fetchSection();
-    }, []);
-  
-    const fetchSection = async () => {
-      const { data } = await supabase
-        .from("Section")
-        .select("*");
-      
-     setSections(data);
-    };
-  
+  useEffect(() => {
+    fetchSection();
+  }, []);
+
+  const fetchSection = async () => {
+    const { data } = await supabase.from("Section").select("*");
+
+    setSections(data);
+  };
 
   // Open modal for adding/editing section
   const openModal = (section = null) => {
@@ -45,41 +42,37 @@ const Section = () => {
 
   const handleAddSection = async (e) => {
     e.preventDefault();
-    const { data, error } = await supabase
-        .from('Section')
-        .insert([
-          {
-           section,
-           grade_level, 
-          },
-        ])
-      if (error) {
-        console.error("Error inserting data:", error);
-        alert("Error inserting data");
-      } else {
-        console.log("Data inserted successfully:", data);
-        window.location.reload();
-      }
+    const { data, error } = await supabase.from("Section").insert([
+      {
+        section,
+        grade_level,
+      },
+    ]);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
   };
-
 
   const handleUpdateSection = async (e) => {
     e.preventDefault();
     const { data, error } = await supabase
-        .from('Section')
-        .update(
-          {
-           section,
-           grade_level, 
-          })
-        .eq('id', editId)  
-      if (error) {
-        console.error("Error inserting data:", error);
-        alert("Error inserting data");
-      } else {
-        console.log("Data inserted successfully:", data);
-        window.location.reload();
-      }
+      .from("Section")
+      .update({
+        section,
+        grade_level,
+      })
+      .eq("id", editId);
+    if (error) {
+      console.error("Error inserting data:", error);
+      alert("Error inserting data");
+    } else {
+      console.log("Data inserted successfully:", data);
+      window.location.reload();
+    }
   };
 
   // Filter logic
@@ -101,21 +94,21 @@ const Section = () => {
           <h2 className="text-2xl font-semibold">Manage Sections</h2>
           <div className="flex gap-4">
             <select
-              className="p-2 border rounded w-1/3"
+              className="p-2 border border-gray-400 rounded w-1/3 bg-white"
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value)}
             >
               <option value="">All Grades</option>
               <option value="Grade 1">Grade 1</option>
-                <option value="Grade 2">Grade 2</option>
-                <option value="Grade 3">Grade 3</option>
-                <option value="Grade 4">Grade 4</option>
-                <option value="Grade 5">Grade 5</option>
-                <option value="Grade 6">Grade 6</option>
+              <option value="Grade 2">Grade 2</option>
+              <option value="Grade 3">Grade 3</option>
+              <option value="Grade 4">Grade 4</option>
+              <option value="Grade 5">Grade 5</option>
+              <option value="Grade 6">Grade 6</option>
             </select>
             <input
               type="text"
-              className="p-2 border rounded w-2/3"
+              className="p-2 border rounded w-2/3 bg-white border-gray-400"
               placeholder="Search by section name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,23 +181,22 @@ const Section = () => {
 
               {/* Grade Level Input */}
               <label className="input w-full mb-4">
-              <select
-                className="w-full p-2 rounded"
-                value={grade_level}
-                onChange={(e) => setGradeLevel(e.target.value)}
-              >
-                <option value="" disabled>
-                  Select grade level
-                </option>
-                <option value="Grade 1">Grade 1</option>
-                <option value="Grade 2">Grade 2</option>
-                <option value="Grade 3">Grade 3</option>
-                <option value="Grade 4">Grade 4</option>
-                <option value="Grade 5">Grade 5</option>
-                <option value="Grade 6">Grade 6</option>
-              </select>
-            </label>
-
+                <select
+                  className="w-full p-2 rounded"
+                  value={grade_level}
+                  onChange={(e) => setGradeLevel(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select grade level
+                  </option>
+                  <option value="Grade 1">Grade 1</option>
+                  <option value="Grade 2">Grade 2</option>
+                  <option value="Grade 3">Grade 3</option>
+                  <option value="Grade 4">Grade 4</option>
+                  <option value="Grade 5">Grade 5</option>
+                  <option value="Grade 6">Grade 6</option>
+                </select>
+              </label>
 
               <div className="flex justify-end space-x-2">
                 <button
@@ -215,7 +207,9 @@ const Section = () => {
                 </button>
                 <button
                   className="btn bg-[#333] text-white"
-                  onClick={editingSection ? handleUpdateSection : handleAddSection}
+                  onClick={
+                    editingSection ? handleUpdateSection : handleAddSection
+                  }
                 >
                   {editingSection ? "Save Changes" : "Add"}
                 </button>
