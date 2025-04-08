@@ -1,8 +1,11 @@
+
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import supabase from "../SupabaseClient.jsx";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const ByGradeReport = () => {
   const [gradeData, setGradeData] = useState([]);
@@ -10,6 +13,7 @@ const ByGradeReport = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState("average");
   const [selectedGrading, setSelectedGrading] = useState("all");
+  const [isExporting, setIsExporting] = useState(false);
 
   // List of subjects
   const subjects = [
@@ -96,7 +100,7 @@ const ByGradeReport = () => {
         return;
       }
       
-      const gradeKey = `GRADE ${grade.grade}`;
+      const gradeKey = `${grade.grade}`;
       if (!gradeGroups[gradeKey]) {
           gradeGroups[gradeKey] = {
               grade: gradeKey,
@@ -244,6 +248,98 @@ const ByGradeReport = () => {
     setSelectedGrading(e.target.value);
   };
 
+  // Function to export data to Excel
+  const exportToExcel = () => {
+    setIsExporting(true);
+    
+    try {
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Generate a title for the export file based on selected filters
+      const subjectName = subjects.find(s => s.value === selectedSubject)?.label || "All Subjects";
+      const gradingPeriod = selectedGrading === "all" 
+        ? "All Gradings" 
+        : gradingPeriods.find(g => g.value === selectedGrading)?.label || "All Gradings";
+      
+      // Create header rows for the Excel file
+      const excelData = [];
+      
+      // Add title rows
+      excelData.push(["LEARNERS' PROFICIENCY LEVEL BY GRADE LEVEL"]);
+      excelData.push([`Subject: ${subjectName}`]);
+      excelData.push([`Grading Period: ${gradingPeriod}`]);
+      excelData.push([`Date Generated: ${new Date().toLocaleDateString()}`]);
+      excelData.push([]);  // Empty row for spacing
+      
+      // Add header rows
+      excelData.push([
+        "Grade Level",
+        "Number of Learners (M)", "Number of Learners (F)", "Number of Learners (T)",
+        "Outstanding (90-100%) (M)", "Outstanding (90-100%) (F)", "Outstanding (90-100%) (T)", "Outstanding %",
+        "Very Satisfactory (85-89%) (M)", "Very Satisfactory (85-89%) (F)", "Very Satisfactory (85-89%) (T)", "Very Satisfactory %",
+        "Satisfactory (80-84%) (M)", "Satisfactory (80-84%) (F)", "Satisfactory (80-84%) (T)", "Satisfactory %",
+        "Fairly Satisfactory (75-79%) (M)", "Fairly Satisfactory (75-79%) (F)", "Fairly Satisfactory (75-79%) (T)", "Fairly Satisfactory %",
+        "Did Not Meet Expectation (70-74%) (M)", "Did Not Meet Expectation (70-74%) (F)", "Did Not Meet Expectation (70-74%) (T)", "Did Not Meet Expectation %",
+        "GPA (M)", "GPA (F)", "GPA (T)"
+      ]);
+      
+      // Add data rows
+      filteredData.forEach(row => {
+        excelData.push([
+          row.grade,
+          row.enrollment.m, row.enrollment.f, row.enrollment.t,
+          row.outstanding.m, row.outstanding.f, row.outstanding.t, `${row.outstanding.percent}%`,
+          row.verySatisfactory.m, row.verySatisfactory.f, row.verySatisfactory.t, `${row.verySatisfactory.percent}%`,
+          row.satisfactory.m, row.satisfactory.f, row.satisfactory.t, `${row.satisfactory.percent}%`,
+          row.fairlySatisfactory.m, row.fairlySatisfactory.f, row.fairlySatisfactory.t, `${row.fairlySatisfactory.percent}%`,
+          row.didNotMeet.m, row.didNotMeet.f, row.didNotMeet.t, `${row.didNotMeet.percent}%`,
+          row.gpa.m, row.gpa.f, row.gpa.t
+        ]);
+      });
+      
+      // Add totals row if available
+      if (totals) {
+        excelData.push([
+          totals.grade,
+          totals.enrollment.m, totals.enrollment.f, totals.enrollment.t,
+          totals.outstanding.m, totals.outstanding.f, totals.outstanding.t, `${totals.outstanding.percent}%`,
+          totals.verySatisfactory.m, totals.verySatisfactory.f, totals.verySatisfactory.t, `${totals.verySatisfactory.percent}%`,
+          totals.satisfactory.m, totals.satisfactory.f, totals.satisfactory.t, `${totals.satisfactory.percent}%`,
+          totals.fairlySatisfactory.m, totals.fairlySatisfactory.f, totals.fairlySatisfactory.t, `${totals.fairlySatisfactory.percent}%`,
+          totals.didNotMeet.m, totals.didNotMeet.f, totals.didNotMeet.t, `${totals.didNotMeet.percent}%`,
+          totals.gpa.m, totals.gpa.f, totals.gpa.t
+        ]);
+      }
+      
+      // Create worksheet from data
+      const ws = XLSX.utils.aoa_to_sheet(excelData);
+      
+      // Set column widths
+      const wscols = Array(27).fill({ wch: 15 });  // Default width for all columns
+      wscols[0] = { wch: 20 };  // Grade Level column wider
+      ws['!cols'] = wscols;
+      
+      // Style the header cells
+      // Note: cell styling requires using xlsx-style package instead of regular xlsx
+      // For this example, we'll just adjust column widths
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Proficiency Report");
+      
+      // Generate file name
+      const fileName = `Proficiency_Level_Report_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}_${gradingPeriod.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Write and download file
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("An error occurred while exporting to Excel. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -263,9 +359,13 @@ const ByGradeReport = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-400 rounded px-3 py-1 bg-white"
             />
-            <button className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded">
+            <button 
+              className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded"
+              onClick={exportToExcel}
+              disabled={isExporting || isLoading || filteredData.length === 0}
+            >
               <RiFileExcel2Fill className="mr-1" />
-              Export via Excel
+              {isExporting ? 'Exporting...' : 'Export via Excel'}
             </button>
           </div>
         </div>
@@ -329,79 +429,187 @@ const ByGradeReport = () => {
             <table className="table table-auto w-full max-w-full">
               <thead>
                 <tr className="text-center border-b border-gray-300">
-                  <th className="p-2">Grade Level</th>
-                  <th className="p-2 bg-yellow-100">
-                    Number of <br /> Learners
+                  <th rowSpan="2" className="p-2">Grade Level</th>
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
+                    Number of Learners
                   </th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     Outstanding <br /> (90-100%)
                   </th>
                   <th className="p-2">%</th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     Very Satisfactory <br /> (85-89%)
                   </th>
                   <th className="p-2">%</th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     Satisfactory <br /> (80-84%)
                   </th>
                   <th className="p-2">%</th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     Fairly Satisfactory <br /> (75-79%)
                   </th>
                   <th className="p-2">%</th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     Did Not Meet <br /> Expectation <br /> (70-74%)
                   </th>
                   <th className="p-2">%</th>
-                  <th className="p-2 bg-yellow-100">
+                  
+                  <th colSpan="3" className="p-2 bg-yellow-100">
                     General Percentage <br /> Average (GPA)
                   </th>
                 </tr>
+                
+                <tr className="text-center border-b border-gray-300">
+                  {/* Gender headers for each category */}
+                  {/* Enrollment */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  
+                  {/* Outstanding */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  <th className="p-2"></th>
+                  
+                  {/* Very Satisfactory */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  <th className="p-2"></th>
+                  
+                  {/* Satisfactory */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  <th className="p-2"></th>
+                  
+                  {/* Fairly Satisfactory */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  <th className="p-2"></th>
+                  
+                  {/* Did Not Meet */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                  <th className="p-2"></th>
+                  
+                  {/* GPA */}
+                  <th className="p-2 bg-blue-50">M</th>
+                  <th className="p-2 bg-pink-50">F</th>
+                  <th className="p-2 bg-gray-50">T</th>
+                </tr>
               </thead>
-
+              
               <tbody>
                 {filteredData.length > 0 ? (
-                  filteredData.map((row, index) => (
-                    <tr key={index} className="border-t text-center">
-                      <td className="p-3 font-medium">{row.grade}</td>
-                      <td className="p-3 bg-gray-50">{row.enrollment.t}</td>
-                      <td className="p-3 bg-gray-50">{row.outstanding.t}</td>
-                      <td className="p-3">{row.outstanding.percent}%</td>
-                      <td className="p-3 bg-gray-50">{row.verySatisfactory.t}</td>
-                      <td className="p-3">{row.verySatisfactory.percent}%</td>
-                      <td className="p-3 bg-gray-50">{row.satisfactory.t}</td>
-                      <td className="p-3">{row.satisfactory.percent}%</td>
-                      <td className="p-3 bg-gray-50">{row.fairlySatisfactory.t}</td>
-                      <td className="p-3">{row.fairlySatisfactory.percent}%</td>
-                      <td className="p-3 bg-gray-50">{row.didNotMeet.t}</td>
-                      <td className="p-3">{row.didNotMeet.percent}%</td>
-                      <td className="p-3 bg-gray-50">{row.gpa.t}</td>
-                    </tr>
-                  ))
+                  <>
+                    {filteredData.map((row, index) => (
+                      <tr key={index} className="text-center hover:bg-gray-100">
+                        <td className="p-2 font-medium">{row.grade}</td>
+                        
+                        {/* Enrollment */}
+                        <td className="p-2 bg-blue-50">{row.enrollment.m}</td>
+                        <td className="p-2 bg-pink-50">{row.enrollment.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.enrollment.t}</td>
+                        
+                        {/* Outstanding */}
+                        <td className="p-2 bg-blue-50">{row.outstanding.m}</td>
+                        <td className="p-2 bg-pink-50">{row.outstanding.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.outstanding.t}</td>
+                        <td className="p-2">{row.outstanding.percent}%</td>
+                        
+                        {/* Very Satisfactory */}
+                        <td className="p-2 bg-blue-50">{row.verySatisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{row.verySatisfactory.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.verySatisfactory.t}</td>
+                        <td className="p-2">{row.verySatisfactory.percent}%</td>
+                        
+                        {/* Satisfactory */}
+                        <td className="p-2 bg-blue-50">{row.satisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{row.satisfactory.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.satisfactory.t}</td>
+                        <td className="p-2">{row.satisfactory.percent}%</td>
+                        
+                        {/* Fairly Satisfactory */}
+                        <td className="p-2 bg-blue-50">{row.fairlySatisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{row.fairlySatisfactory.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.fairlySatisfactory.t}</td>
+                        <td className="p-2">{row.fairlySatisfactory.percent}%</td>
+                        
+                        {/* Did Not Meet */}
+                        <td className="p-2 bg-blue-50">{row.didNotMeet.m}</td>
+                        <td className="p-2 bg-pink-50">{row.didNotMeet.f}</td>
+                        <td className="p-2 bg-gray-50 font-medium">{row.didNotMeet.t}</td>
+                        <td className="p-2">{row.didNotMeet.percent}%</td>
+                        
+                        {/* GPA */}
+                        <td className="p-2 bg-blue-50">{row.gpa.m}</td>
+                        <td className="p-2 bg-pink-50">{row.gpa.f}</td>
+                        <td className="p-2 bg-gray-50 font-bold">{row.gpa.t}</td>
+                      </tr>
+                    ))}
+                    
+                    {/* Totals row */}
+                    {totals && (
+                      <tr className="text-center font-bold bg-slate-100">
+                        <td className="p-2">{totals.grade}</td>
+                        
+                        {/* Enrollment */}
+                        <td className="p-2 bg-blue-50">{totals.enrollment.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.enrollment.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.enrollment.t}</td>
+                        
+                        {/* Outstanding */}
+                        <td className="p-2 bg-blue-50">{totals.outstanding.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.outstanding.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.outstanding.t}</td>
+                        <td className="p-2">{totals.outstanding.percent}%</td>
+                        
+                        {/* Very Satisfactory */}
+                        <td className="p-2 bg-blue-50">{totals.verySatisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.verySatisfactory.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.verySatisfactory.t}</td>
+                        <td className="p-2">{totals.verySatisfactory.percent}%</td>
+                        
+                        {/* Satisfactory */}
+                        <td className="p-2 bg-blue-50">{totals.satisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.satisfactory.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.satisfactory.t}</td>
+                        <td className="p-2">{totals.satisfactory.percent}%</td>
+                        
+                        {/* Fairly Satisfactory */}
+                        <td className="p-2 bg-blue-50">{totals.fairlySatisfactory.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.fairlySatisfactory.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.fairlySatisfactory.t}</td>
+                        <td className="p-2">{totals.fairlySatisfactory.percent}%</td>
+                        
+                        {/* Did Not Meet */}
+                        <td className="p-2 bg-blue-50">{totals.didNotMeet.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.didNotMeet.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.didNotMeet.t}</td>
+                        <td className="p-2">{totals.didNotMeet.percent}%</td>
+                        
+                        {/* GPA */}
+                        <td className="p-2 bg-blue-50">{totals.gpa.m}</td>
+                        <td className="p-2 bg-pink-50">{totals.gpa.f}</td>
+                        <td className="p-2 bg-gray-50">{totals.gpa.t}</td>
+                      </tr>
+                    )}
+                  </>
                 ) : (
                   <tr>
-                    <td colSpan="13" className="p-4 text-center">
-                      No data found matching your search criteria
+                    <td colSpan="27" className="text-center py-6">
+                      {isLoading ? 'Loading data...' : 'No data available for the selected filters.'}
                     </td>
-                  </tr>
-                )}
-
-                {/* Total Row */}
-                {totals && filteredData.length > 0 && (
-                  <tr className="bg-gray-200 font-bold text-center border-t">
-                    <td className="p-3">TOTAL</td>
-                    <td className="p-3">{totals.enrollment.t}</td>
-                    <td className="p-3">{totals.outstanding.t}</td>
-                    <td className="p-3">{totals.outstanding.percent}%</td>
-                    <td className="p-3">{totals.verySatisfactory.t}</td>
-                    <td className="p-3">{totals.verySatisfactory.percent}%</td>
-                    <td className="p-3">{totals.satisfactory.t}</td>
-                    <td className="p-3">{totals.satisfactory.percent}%</td>
-                    <td className="p-3">{totals.fairlySatisfactory.t}</td>
-                    <td className="p-3">{totals.fairlySatisfactory.percent}%</td>
-                    <td className="p-3">{totals.didNotMeet.t}</td>
-                    <td className="p-3">{totals.didNotMeet.percent}%</td>
-                    <td className="p-3">{totals.gpa.t}</td>
                   </tr>
                 )}
               </tbody>
@@ -411,7 +619,6 @@ const ByGradeReport = () => {
       </main>
     </div>
   );
-
 };
 
 export default ByGradeReport;

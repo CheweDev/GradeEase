@@ -74,7 +74,7 @@ const Advisors = () => {
         name,
         role: "TEACHER",
         email: `${name?.toLowerCase().replace(/\s+/g, "")}@edu.ph`,
-        status: "Verified",
+        status: "Active",
       },
     ]);
     if (error) {

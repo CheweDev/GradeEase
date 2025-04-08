@@ -122,9 +122,9 @@ const Sidebar = () => {
         <div className="hidden md:flex items-center px-4 py-3 border-b border-[#2a3441]">
           <div className="flex-shrink-0">
             <img
-              src="admin.png"
+              src="logoo.png"
               alt="User Avatar"
-              className="w-10 h-10 rounded-full border-2 border-gray-600"
+              className="w-10 h-10 rounded-full"
             />
           </div>
           <div className="ml-3 flex-1">

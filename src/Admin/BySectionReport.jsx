@@ -3,6 +3,8 @@ import Header from "./Header.jsx";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import supabase from "../SupabaseClient.jsx";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const BySectionReport = () => {
   const [sectionData, setSectionData] = useState([]);
@@ -10,6 +12,7 @@ const BySectionReport = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState("average");
   const [selectedGrading, setSelectedGrading] = useState("all");
+  const [isExporting, setIsExporting] = useState(false);
 
   // List of subjects
   const subjects = [
@@ -37,6 +40,79 @@ const BySectionReport = () => {
   useEffect(() => {
     fetchGradeData();
   }, [selectedSubject, selectedGrading]);
+  
+  const exportToExcel = () => {
+    setIsExporting(true);
+    
+    try {
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Generate a title for the export file based on selected filters
+      const subjectName = subjects.find(s => s.value === selectedSubject)?.label || "All Subjects";
+      const gradingPeriod = selectedGrading === "all" 
+        ? "All Gradings" 
+        : gradingPeriods.find(g => g.value === selectedGrading)?.label || "All Gradings";
+      
+      // Create header rows for the Excel file
+      const excelData = [];
+      
+      // Add title rows
+      excelData.push(["LEARNERS' PROFICIENCY LEVEL BY SECTION"]);
+      excelData.push([`Subject: ${subjectName}`]);
+      excelData.push([`Grading Period: ${gradingPeriod}`]);
+      excelData.push([`Date Generated: ${new Date().toLocaleDateString()}`]);
+      excelData.push([]);  // Empty row for spacing
+      
+      // Add header rows
+      excelData.push([
+        "Grade Level & Section",
+        "Number of Learners (M)", "Number of Learners (F)", "Number of Learners (T)",
+        "Outstanding (90-100%) (M)", "Outstanding (90-100%) (F)", "Outstanding (90-100%) (T)", "Outstanding %",
+        "Very Satisfactory (85-89%) (M)", "Very Satisfactory (85-89%) (F)", "Very Satisfactory (85-89%) (T)", "Very Satisfactory %",
+        "Satisfactory (80-84%) (M)", "Satisfactory (80-84%) (F)", "Satisfactory (80-84%) (T)", "Satisfactory %",
+        "Fairly Satisfactory (75-79%) (M)", "Fairly Satisfactory (75-79%) (F)", "Fairly Satisfactory (75-79%) (T)", "Fairly Satisfactory %",
+        "Did Not Meet Expectation (70-74%) (M)", "Did Not Meet Expectation (70-74%) (F)", "Did Not Meet Expectation (70-74%) (T)", "Did Not Meet Expectation %",
+        "GPA (M)", "GPA (F)", "GPA (T)"
+      ]);
+      
+      // Add data rows
+      filteredData.forEach(row => {
+        excelData.push([
+          row.level,
+          row.enrollment.m, row.enrollment.f, row.enrollment.t,
+          row.outstanding.m, row.outstanding.f, row.outstanding.t, `${row.outstanding.percent}%`,
+          row.verySatisfactory.m, row.verySatisfactory.f, row.verySatisfactory.t, `${row.verySatisfactory.percent}%`,
+          row.satisfactory.m, row.satisfactory.f, row.satisfactory.t, `${row.satisfactory.percent}%`,
+          row.fairlySatisfactory.m, row.fairlySatisfactory.f, row.fairlySatisfactory.t, `${row.fairlySatisfactory.percent}%`,
+          row.didNotMeet.m, row.didNotMeet.f, row.didNotMeet.t, `${row.didNotMeet.percent}%`,
+          row.gpa.m, row.gpa.f, row.gpa.t
+        ]);
+      });
+      
+      // Create worksheet from data
+      const ws = XLSX.utils.aoa_to_sheet(excelData);
+      
+      // Set column widths
+      const wscols = Array(27).fill({ wch: 15 });  // Default width for all columns
+      wscols[0] = { wch: 25 };  // Section column wider
+      ws['!cols'] = wscols;
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Section Proficiency Report");
+      
+      // Generate file name
+      const fileName = `Section_Proficiency_Report_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}_${gradingPeriod.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      // Write and download file
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      alert("An error occurred while exporting to Excel. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const fetchGradeData = async () => {
     setIsLoading(true);
@@ -203,10 +279,14 @@ const BySectionReport = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-400 rounded px-3 py-1 bg-white"
             />
-            <button className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded">
-              <RiFileExcel2Fill className="mr-1" />
-              Export via Excel
-            </button>
+          <button 
+          className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded"
+          onClick={exportToExcel}
+          disabled={isExporting || isLoading || filteredData.length === 0}
+        >
+          <RiFileExcel2Fill className="mr-1" />
+          {isExporting ? 'Exporting...' : 'Export via Excel'}
+        </button>
           </div>
         </div>
 

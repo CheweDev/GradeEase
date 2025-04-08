@@ -80,7 +80,7 @@ const AdminDashboard = () => {
                 <TbChecklist size={32} />
               </div>
               <div className="flex justify-center">
-                <h2 className="card-title text-lg">Total Grade</h2>
+                <h2 className="card-title text-lg">Total Grade Level</h2>
               </div>
               <div className="flex justify-center">
                 <h2 className="text-xl">{gradeCount}</h2>

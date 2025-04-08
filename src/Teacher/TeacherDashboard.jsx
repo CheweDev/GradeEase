@@ -6,12 +6,18 @@ import supabase from "../SupabaseClient.jsx";
 const TeacherDashboard = () => {
   const adviserName = sessionStorage.getItem("name");
   const [students, setStudents] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [filteredSections, setFilteredSections] = useState([]);
   const [adviserSection, setAdviserSection] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedQuarter, setSelectedQuarter] = useState("firstQuarter");
   const [grades, setGrades] = useState([]);
   const [studentGrades, setStudentGrades] = useState([]);
+  const [promotionData, setPromotionData] = useState({
+    section: "",
+    grade_level: ""
+  });
   const [newGrades, setNewGrade] = useState({
     grading: "",
     mtb_mle: "",
@@ -28,6 +34,7 @@ const TeacherDashboard = () => {
 
   useEffect(() => {
     fetchAdvisers();
+    fetchSections();
   }, []);
 
   const fetchAdvisers = async () => {
@@ -38,6 +45,18 @@ const TeacherDashboard = () => {
     .single();
     fetchStudents(data.advisory);
 
+  };
+
+  const fetchSections = async () => {
+    const { data, error } = await supabase
+      .from("Section")
+      .select("section, grade_level");
+    
+    if (error) {
+      console.error("Error fetching sections:", error);
+    } else {
+      setSections(data);
+    }
   };
 
   const fetchStudents = async (advisory) => {
@@ -63,12 +82,12 @@ const TeacherDashboard = () => {
     setStudentGrades(data || []);
   };
 
-  // Handle quarter selection change
+
   const handleQuarterChange = (quarter) => {
     setSelectedQuarter(quarter);
   };
 
-  // Handle grade input change
+
   const handleGradeChange = (subjectName, value) => {
     setGrades((prevGrades) => ({
       ...prevGrades,
@@ -79,11 +98,45 @@ const TeacherDashboard = () => {
     }));
   };
 
+  const uniqueGradeLevels = [...new Set(sections.map(section => section.grade_level))];
+
+  const handleGradeLevelChange = (selectedGradeLevel) => {
+    const sectionsForGradeLevel = sections.filter(
+      section => section.grade_level === selectedGradeLevel
+    );
+
+
+    setPromotionData(prev => ({
+      grade_level: selectedGradeLevel,
+      section: "" 
+    }));
+    setFilteredSections(sectionsForGradeLevel);
+  };
+
   const handleGradeSubmit = async (e) => {
     e.preventDefault();
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
     const school_year = `${currentYear}-${nextYear}`;
+  
+    const subjects = [
+      newGrades.mtb_mle,
+      newGrades.esp,
+      newGrades.english,
+      newGrades.math,
+      newGrades.science,
+      newGrades.filipino,
+      newGrades.ap,
+      newGrades.epp,
+      newGrades.mapeh,
+    ].map((grade) => (grade === "" ? null : Number(grade))) 
+      .filter((grade) => grade !== null && !isNaN(grade)); 
+  
+
+    const totalSubjects = subjects.length;
+    const totalSum = subjects.reduce((sum, grade) => sum + grade, 0);
+    const average = totalSubjects > 0 ? (totalSum / totalSubjects).toFixed(2) : null; 
+  
     const { data, error } = await supabase.from("Grades").insert([
       {
         name: selectedStudent.name,
@@ -91,20 +144,20 @@ const TeacherDashboard = () => {
         grade: selectedStudent.grade,
         grading: newGrades.grading,
         school_year,
-        mtb_mle: newGrades.mtb_mle,
-        esp: newGrades.esp,
-        english: newGrades.english,
-        math: newGrades.math,
-        science: newGrades.science,
-        filipino: newGrades.filipino,
-        ap: newGrades.ap,
-        epp: newGrades.epp,
-        mapeh: newGrades.mapeh,
-        average: newGrades.average,
+        mtb_mle: newGrades.mtb_mle === "" ? null : Number(newGrades.mtb_mle),
+        esp: newGrades.esp === "" ? null : Number(newGrades.esp),
+        english: newGrades.english === "" ? null : Number(newGrades.english),
+        math: newGrades.math === "" ? null : Number(newGrades.math),
+        science: newGrades.science === "" ? null : Number(newGrades.science),
+        filipino: newGrades.filipino === "" ? null : Number(newGrades.filipino),
+        ap: newGrades.ap === "" ? null : Number(newGrades.ap),
+        epp: newGrades.epp === "" ? null : Number(newGrades.epp),
+        mapeh: newGrades.mapeh === "" ? null : Number(newGrades.mapeh),
+        average,
         gender: selectedStudent.gender,
-
       },
     ]);
+  
     if (error) {
       console.error("Error inserting data:", error);
       alert("Error inserting data");
@@ -113,7 +166,8 @@ const TeacherDashboard = () => {
       window.location.reload();
     }
   };
-
+  
+  
   // Handle search query change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -129,6 +183,32 @@ const TeacherDashboard = () => {
   const getGradeForSubject = (subject, gradingPeriod) => {
     const gradeEntry = studentGrades.find(grade => grade.grading === gradingPeriod);
     return gradeEntry ? gradeEntry[subject] : "-";
+  };
+
+  const handlePromoteStudent = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedStudent || !promotionData.section || !promotionData.grade_level) {
+      alert("Please select a section and grade level");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("Student Data")
+      .update({ 
+        section: promotionData.section,
+        grade: promotionData.grade_level 
+      })
+      .eq("id", selectedStudent.id);
+
+    if (error) {
+      console.error("Error promoting student:", error);
+      alert("Error promoting student");
+    } else {
+      alert("Student promoted successfully");
+      document.getElementById("promote_modal").close();
+      window.location.reload();
+    }
   };
 
   return (
@@ -189,6 +269,15 @@ const TeacherDashboard = () => {
                       }}
                     >
                       View Grades
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        document.getElementById("promote_modal").showModal();
+                      }}
+                    >
+                   Promote
                     </button>
                   </td>
                 </tr>
@@ -355,18 +444,6 @@ const TeacherDashboard = () => {
                   }
                 />
               </label>
-              <label className="block mb-2">
-                <span>Average</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.average}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, average: e.target.value })
-                  }
-                />
-              </label>
               </div>
 
       
@@ -497,6 +574,92 @@ const TeacherDashboard = () => {
     </div>
   </div>
 </dialog>
+
+<dialog id="promote_modal" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">
+              Promote {selectedStudent?.name}
+            </h3>
+            <form onSubmit={handlePromoteStudent}>
+              <button
+                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                type="button"
+                onClick={() => document.getElementById("promote_modal").close()}
+              >
+                ✕
+              </button>
+
+              <div className="form-control w-full mt-4">
+                <label className="label">
+                  <span className="label-text">Select New Grade Level</span>
+                </label>
+                <select
+                  className="select select-bordered w-full"
+                  value={promotionData.grade_level}
+                  onChange={(e) => handleGradeLevelChange(e.target.value)}
+                  required
+                >
+                  <option value="">Select Grade Level</option>
+                  {uniqueGradeLevels.map((gradeLevel, index) => (
+                    <option 
+                      key={index} 
+                      value={gradeLevel}
+                    >
+                      {gradeLevel}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-control w-full mt-4">
+                <label className="label">
+                  <span className="label-text">Select New Section</span>
+                </label>
+                <select
+                     className="select select-bordered w-full"
+                     value={promotionData.section}
+                     onChange={(e) => 
+                       setPromotionData(prev => ({ 
+                         ...prev, 
+                         section: e.target.value 
+                       }))
+                     }
+                     disabled={!promotionData.grade_level}
+                     required
+                >
+                  <option value="">
+                    {promotionData.grade_level 
+                      ? "Select Section" 
+                      : "First Select Grade Level"}
+                  </option>
+                  {filteredSections.map((sectionItem, index) => (
+                    <option 
+                      key={index} 
+                      value={sectionItem.section}
+                    >
+                      {sectionItem.section}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+           
+
+              <div className="modal-action">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => document.getElementById("promote_modal").close()}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn bg-[#333] text-white">
+                  Promote Student
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
       </main>
     </div>
   );

@@ -81,7 +81,7 @@ const Students = () => {
         name: newStudent.name,
         role: "STUDENT",
         email: `${newStudent.name?.toLowerCase().replace(/\s+/g, "")}@edu.ph`,
-        status: "Verified",
+        status: "Active",
       },
     ]);
     if (error) {

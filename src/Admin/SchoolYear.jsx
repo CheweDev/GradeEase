@@ -9,7 +9,6 @@ const SchoolYear = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [school_year, setSchoolYear] = useState("");
 
-
   useEffect(() => {
     fetchSchoolYear();
   }, []);
@@ -19,9 +18,8 @@ const SchoolYear = () => {
       .from("School Year")
       .select("*");
     
-   setSchoolYears(data);
+    setSchoolYears(data);
   };
-
 
   const handleAddSchoolYear = async (e) => {
     e.preventDefault();
@@ -42,15 +40,27 @@ const SchoolYear = () => {
       }
   };
 
+  // Updated function to set a year as current
+  const setAsCurrent = async (yearId) => {
+    try {
+      // First, update all years to "No"
+      await supabase
+        .from('School Year')
+        .update({ current: "No" })
+        .gt('id', 0); // This ensures all rows are updated
 
-  // Function to set a year as current
-  const setAsCurrent = (year) => {
-    setSchoolYears((prev) =>
-      prev.map((item) => ({
-        ...item,
-        isCurrent: item.year === year,
-      }))
-    );
+      // Then, set the selected year to "Yes"
+      await supabase
+        .from('School Year')
+        .update({ current: "Yes" })
+        .eq('id', yearId);
+
+      // Refresh the data after update
+      window.location.reload();
+    } catch (error) {
+      console.error("Error setting current year:", error);
+      alert("Failed to set current year");
+    }
   };
 
   return (
@@ -84,24 +94,16 @@ const SchoolYear = () => {
             <tbody>
               {schoolYears.map((item) => (
                 <tr
-                  key={item.year}
-                  className={`border-t ${item.isCurrent ? "bg-green-100" : ""}`}
+                  key={item.id}
+                  className={`border-t ${item.current === "Yes" ? "bg-green-100" : ""}`}
                 >
                   <td className="p-3">{item.school_year}</td>
+                  <td className="p-3">{item.current}</td>
                   <td className="p-3">
-                    {item.isCurrent ? (
-                      <span className="text-green-700 font-semibold">
-                        Current
-                      </span>
-                    ) : (
-                      "No"
-                    )}
-                  </td>
-                  <td className="p-3">
-                    {!item.isCurrent && (
+                    {item.current !== "Yes" && (
                       <button
                         className="btn btn-sm btn-info text-white"
-                        onClick={() => setAsCurrent(item.year)}
+                        onClick={() => setAsCurrent(item.id)}
                       >
                         Set as Current
                       </button>
@@ -113,7 +115,7 @@ const SchoolYear = () => {
           </table>
         </div>
 
-        {/* Modal for Adding New Year */}
+        {/* Modal for Adding New Year (remains the same) */}
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
             <div className="bg-white p-6 rounded shadow-lg w-96">
