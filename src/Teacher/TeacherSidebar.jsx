@@ -3,18 +3,25 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { FiGrid, FiUser, FiMenu, FiX } from "react-icons/fi";
 import { RiLogoutCircleLine } from "react-icons/ri";
 import { FiMoreVertical } from "react-icons/fi";
+import { FiBarChart2 } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 
 const TeacherSidebar = () => {
   const name = sessionStorage.getItem("name");
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const [isReportsOpen, setIsReportsOpen] = useState(() => {
+    return JSON.parse(localStorage.getItem("isReportsOpen")) || false;
+  });
+
 
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const toggleReports = () => setIsReportsOpen((prev) => !prev);
 
   const sessionClear = () => {
     sessionStorage.clear();
@@ -103,6 +110,64 @@ const TeacherSidebar = () => {
                 <span className="flex-1">Dashboard</span>
               </NavLink>
             </li>
+
+              {/* Reports */}
+                      <li>
+                        <button
+                          onClick={toggleReports}
+                          className="flex items-center px-4 py-2.5 text-sm hover:bg-[#2a3441] w-full text-left"
+                        >
+                          <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
+                            <FiBarChart2 size={16} />
+                          </span>
+                          <span className="flex-1">Proficiency Reports</span>
+                          <span>
+                            {isReportsOpen ? (
+                              <FiChevronDown size={16} />
+                            ) : (
+                              <FiChevronRight size={16} />
+                            )}
+                          </span>
+                        </button>
+                        {isReportsOpen && (
+                          <ul className="pl-8 space-y-1">
+                            <li>
+                              <NavLink
+                                to="/teacher-section"
+                                className={({ isActive }) =>
+                                  `flex items-center px-4 py-2.5 text-sm ${
+                                    isActive
+                                      ? "bg-teal-500 text-white"
+                                      : "hover:bg-[#2a3441]"
+                                  }`
+                                }
+                              >
+                                <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
+                                  <FiBarChart2 size={16} />
+                                </span>
+                                <span className="flex-1">By Section</span>
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                    to="/teacher-grade"
+                                className={({ isActive }) =>
+                                  `flex items-center px-4 py-2.5 text-sm ${
+                                    isActive
+                                      ? "bg-teal-500 text-white"
+                                      : "hover:bg-[#2a3441]"
+                                  }`
+                                }
+                              >
+                                <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
+                                  <FiBarChart2 size={16} />
+                                </span>
+                                <span className="flex-1">By Grade Level</span>
+                              </NavLink>
+                            </li>
+                          </ul>
+                        )}
+                      </li>
 
             <li>
               <NavLink

@@ -15,6 +15,8 @@ import StudentDashboard from "./Student/StudentDashboard.jsx";
 import StudentProfile from "./Student/StudentProfile.jsx";
 import TeacherDashboard from "./Teacher/TeacherDashboard.jsx";
 import TeacherProfile from "./Teacher/TeacherProfile.jsx";
+import TeacherSectionReport from "./Teacher/TeacherSectionReport.jsx";
+import TeacherGradeReport from "./Teacher/TeacherGradeReport.jsx";
 
 const Router = () => {
   return (
@@ -36,6 +38,8 @@ const Router = () => {
         <Route path="/user-profile" element={<StudentProfile />} />
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher-profile" element={<TeacherProfile />} />
+        <Route path="/teacher-section" element={<TeacherSectionReport />} />
+        <Route path="/teacher-grade" element={<TeacherGradeReport />} />
       </Routes>
     </BrowserRouter>
   );
