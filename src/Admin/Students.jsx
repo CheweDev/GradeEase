@@ -191,29 +191,31 @@ const Students = () => {
               <h3 className="text-lg font-semibold mb-4">Add New Student</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <label className="block mb-2">
-                <span>LRN Number</span>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter LRN"
-                  value={newStudent.lrn}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, lrn: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>Student Name</span>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Name"
-                  value={newStudent.name}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, name: e.target.value })
-                  }
-                />
-              </label>
+              <span>LRN Number</span>
+              <input
+                type="text"
+                className="w-full p-2 border rounded"
+                placeholder="Enter LRN"
+                value={newStudent.lrn}
+                onChange={(e) => {
+                  const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                  setNewStudent({ ...newStudent, lrn: numbersOnly });
+                }}
+              />
+            </label>
+            <label className="block mb-2">
+          <span>Student Name</span>
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            placeholder="Enter Name"
+            value={newStudent.name}
+            onChange={(e) => {
+              const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+              setNewStudent({ ...newStudent, name: onlyLetters });
+            }}
+          />
+          </label>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <label className="block mb-2">

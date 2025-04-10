@@ -221,15 +221,17 @@ const Advisors = () => {
 
               {/* Advisor Name Input */}
               <label className="input w-full mb-4">
-                <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter advisor name (e.g., Mr. Smith)"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </label>
-
+              <input
+                type="text"
+                className="w-full p-2 rounded"
+                placeholder="Enter advisor name (e.g., Mr. Smith)"
+                value={name}
+                onChange={(e) => {
+                  const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                  setName(onlyLetters);
+                }}
+              />
+            </label>
               {/* Grade Level Input */}
               <label className="input w-full mb-4">
               <select
