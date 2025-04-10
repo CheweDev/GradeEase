@@ -5,6 +5,7 @@ import { RiLogoutCircleLine } from "react-icons/ri";
 import { FiMoreVertical } from "react-icons/fi";
 import { FiBarChart2 } from "react-icons/fi";
 import { FiChevronDown } from "react-icons/fi";
+import { FiChevronRight } from "react-icons/fi";
 
 const TeacherSidebar = () => {
   const name = sessionStorage.getItem("name");
