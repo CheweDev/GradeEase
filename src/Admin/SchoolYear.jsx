@@ -138,12 +138,15 @@ const SchoolYear = () => {
                 </svg>
 
                 <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter school year (e.g., 2024-2025)"
-                  value={school_year}
-                  onChange={(e) => setSchoolYear(e.target.value)}
-                />
+                type="text"
+                className="w-full p-2 rounded"
+                placeholder="Enter school year (e.g., 2024-2025)"
+                value={school_year}
+                onChange={(e) => {
+                  const onlyNumbersAndDash = e.target.value.replace(/[^0-9-]/g, '');
+                  setSchoolYear(onlyNumbersAndDash);
+                }}
+              />
               </label>
 
               <div className="flex justify-end space-x-2">

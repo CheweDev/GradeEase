@@ -240,11 +240,11 @@ const Advisors = () => {
                 onChange={(e) => setGrade(e.target.value)}
               >
                 <option value="" disabled>Select Grade Level</option>
-                {sections.map((item, index) => (
-                  <option key={index} value={item.grade_level}>{item.grade_level}</option>
+                {[...new Set(sections.map(item => item.grade_level))].map((level, index) => (
+                  <option key={index} value={level}>{level}</option>
                 ))}
               </select>
-              </label>
+            </label>
 
                    {/* Advisory Sections Input */}
                    <label className="input w-full mb-4">

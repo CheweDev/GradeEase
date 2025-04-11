@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
-import { FiEye, FiPlusCircle } from "react-icons/fi";
+import { FiEye, FiPlusCircle, FiEdit } from "react-icons/fi";
 import supabase from "../SupabaseClient.jsx";
 
 const Students = () => {
@@ -9,8 +9,10 @@ const Students = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [sections, setSections] = useState([]);
   const [schoolYear, setSchoolYear] = useState([]);
+  const [editingStudent, setEditingStudent] = useState(null);
 
   // New Student Form State
   const [newStudent, setNewStudent] = useState({
@@ -105,16 +107,42 @@ const Students = () => {
       lowercase[Math.floor(Math.random() * lowercase.length)] +
       numbers[Math.floor(Math.random() * numbers.length)];
   
- 
     for (let i = 3; i < length; i++) {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }
     return password.split("").sort(() => Math.random() - 0.5).join("");
   };
   
+  const handleEditClick = (student) => {
+    setEditingStudent({...student});
+    setIsEditModalOpen(true);
+  };
 
-
-
+  const updateStudent = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase
+      .from("Student Data")
+      .update({
+        lrn: editingStudent.lrn,
+        name: editingStudent.name,
+        grade: editingStudent.grade,
+        gender: editingStudent.gender,
+        section: editingStudent.section,
+        guardian: editingStudent.guardian,
+        school_year: editingStudent.school_year,
+        contact_number: editingStudent.contact_number,
+      })
+      .eq("id", editingStudent.id);
+      
+    if (error) {
+      console.error("Error updating data:", error);
+      alert("Error updating data");
+    } else {
+      console.log("Data updated successfully");
+      setIsEditModalOpen(false);
+      fetchStudents();
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -163,12 +191,18 @@ const Students = () => {
                     <td className="p-3">{student.name}</td>
                     <td className="p-3">{student.grade}</td>
                     <td className="p-3">{student.section}</td>
-                    <td className="p-3">
+                    <td className="p-3 flex gap-2">
                       <button
                         className="btn btn-sm btn-info text-white"
                         onClick={() => setSelectedStudent(student)}
                       >
                         <FiEye className="inline-block" /> View Profile
+                      </button>
+                      <button
+                        className="btn btn-sm btn-warning text-white"
+                        onClick={() => handleEditClick(student)}
+                      >
+                        <FiEdit className="inline-block" /> Edit
                       </button>
                     </td>
                   </tr>
@@ -286,11 +320,12 @@ const Students = () => {
                 <input
                   type="text"
                   className="w-full p-2 border rounded"
-                  placeholder="Enter Section"
+                  placeholder="Enter Guardian Name"
                   value={newStudent.guardian}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, guardian: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                    setNewStudent({ ...newStudent, guardian: onlyLetters });
+                  }}
                 />
               </label>
 
@@ -299,11 +334,12 @@ const Students = () => {
                 <input
                   type="text"
                   className="w-full p-2 border rounded"
-                  placeholder="Enter Section"
+                  placeholder="Enter Contact Number"
                   value={newStudent.contact_number}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, contact_number: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                    setNewStudent({ ...newStudent, contact_number: numbersOnly });
+                  }}
                 />
               </label>
               </div>
@@ -326,6 +362,146 @@ const Students = () => {
           </div>
         )}
 
+        {/* Edit Student Modal */}
+        {isEditModalOpen && editingStudent && (
+          <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
+            <div className="bg-white p-6 rounded shadow-lg w-2/4">
+              <h3 className="text-lg font-semibold mb-4">Edit Student</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>LRN Number</span>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter LRN"
+                    value={editingStudent.lrn}
+                    onChange={(e) => {
+                      const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                      setEditingStudent({ ...editingStudent, lrn: numbersOnly });
+                    }}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>Student Name</span>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Name"
+                    value={editingStudent.name}
+                    onChange={(e) => {
+                      const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                      setEditingStudent({ ...editingStudent, name: onlyLetters });
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>Grade Level</span>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={editingStudent.grade}
+                    onChange={(e) =>
+                      setEditingStudent({ ...editingStudent, grade: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>Select Grade Level</option>
+                    {sections.map((item, index) => (
+                      <option key={index} value={item.grade_level}>{item.grade_level}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block mb-4">
+                  <span>Section</span>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={editingStudent.section}
+                    onChange={(e) =>
+                      setEditingStudent({ ...editingStudent, section: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>Select Section</option>
+                    {sections.map((item, index) => (
+                      <option key={index} value={item.section}>{item.section}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block mb-4">
+                  <span>School Year</span>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={editingStudent.school_year}
+                    onChange={(e) =>
+                      setEditingStudent({ ...editingStudent, school_year: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>Select School Year</option>
+                    {schoolYear.map((item, index) => (
+                      <option key={index} value={item.school_year}>{item.school_year}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block mb-4">
+                  <span>Gender</span>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={editingStudent.gender}
+                    onChange={(e) =>
+                      setEditingStudent({ ...editingStudent, gender: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-4">
+                  <span>Guardian's Name</span>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Guardian Name"
+                    value={editingStudent.guardian}
+                    onChange={(e) => {
+                      const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                      setEditingStudent({ ...editingStudent, guardian: onlyLetters });
+                    }}
+                  />
+                </label>
+                <label className="block mb-4">
+                  <span>Guardian's Number</span>
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Contact Number"
+                    value={editingStudent.contact_number}
+                    onChange={(e) => {
+                      const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                      setEditingStudent({ ...editingStudent, contact_number: numbersOnly });
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                  onClick={() => setIsEditModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 btn bg-yellow-500 text-white"
+                  onClick={updateStudent}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* View Profile Modal */}
         {selectedStudent && (
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
@@ -342,6 +518,9 @@ const Students = () => {
               </p>
               <p>
                 <strong>Section:</strong> {selectedStudent.section}
+              </p>
+              <p>
+                <strong>Gender:</strong> {selectedStudent.gender}
               </p>
               <p>
                 <strong>Guardian:</strong> {selectedStudent.guardian}
