@@ -262,10 +262,11 @@ const Students = () => {
                 }
               >
                 <option value="" disabled>Select Grade Level</option>
-                {sections.map((item, index) => (
-                  <option key={index} value={item.grade_level}>{item.grade_level}</option>
+                {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
+                  <option key={index} value={grade}>{grade}</option>
                 ))}
               </select>
+
               </label>
               <label className="block mb-4">
               <span>Section</span>
@@ -399,17 +400,18 @@ const Students = () => {
                 <label className="block mb-2">
                   <span>Grade Level</span>
                   <select
-                    className="w-full p-2 border rounded"
-                    value={editingStudent.grade}
-                    onChange={(e) =>
-                      setEditingStudent({ ...editingStudent, grade: e.target.value })
-                    }
-                  >
-                    <option value="" disabled>Select Grade Level</option>
-                    {sections.map((item, index) => (
-                      <option key={index} value={item.grade_level}>{item.grade_level}</option>
-                    ))}
-                  </select>
+                  className="w-full p-2 border rounded"
+                  value={editingStudent.grade}
+                  onChange={(e) =>
+                    setEditingStudent({ ...editingStudent, grade: e.target.value })
+                  }
+                >
+                  <option value="" disabled>Select Grade Level</option>
+                  {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
+                    <option key={index} value={grade}>{grade}</option>
+                  ))}
+                </select>
+
                 </label>
                 <label className="block mb-4">
                   <span>Section</span>
