@@ -20,14 +20,16 @@ const TeacherDashboard = () => {
   });
   const [newGrades, setNewGrade] = useState({
     grading: "",
-    mtb_mle: "",
+    language: "",
     esp: "",
     english: "",
     math: "",
     science: "",
     filipino: "",
     ap: "",
-    ep: "",
+    reading: "",
+    makabansa: "",
+    gmrc:"",
     mapeh: "",
     average: "",
   });
@@ -120,14 +122,16 @@ const TeacherDashboard = () => {
     const school_year = `${currentYear}-${nextYear}`;
   
     const subjects = [
-      newGrades.mtb_mle,
+      newGrades.language,
       newGrades.esp,
       newGrades.english,
       newGrades.math,
       newGrades.science,
       newGrades.filipino,
       newGrades.ap,
-      newGrades.epp,
+      newGrades.reading,
+      newGrades.makabansa,
+      newGrades.gmrc,
       newGrades.mapeh,
     ].map((grade) => (grade === "" ? null : Number(grade))) 
       .filter((grade) => grade !== null && !isNaN(grade)); 
@@ -144,14 +148,16 @@ const TeacherDashboard = () => {
         grade: selectedStudent.grade,
         grading: newGrades.grading,
         school_year,
-        mtb_mle: newGrades.mtb_mle === "" ? null : Number(newGrades.mtb_mle),
+        language: newGrades.language === "" ? null : Number(newGrades.language),
         esp: newGrades.esp === "" ? null : Number(newGrades.esp),
         english: newGrades.english === "" ? null : Number(newGrades.english),
         math: newGrades.math === "" ? null : Number(newGrades.math),
         science: newGrades.science === "" ? null : Number(newGrades.science),
         filipino: newGrades.filipino === "" ? null : Number(newGrades.filipino),
         ap: newGrades.ap === "" ? null : Number(newGrades.ap),
-        epp: newGrades.epp === "" ? null : Number(newGrades.epp),
+        reading: newGrades.reading === "" ? null : Number(newGrades.reading),
+        makabansa: newGrades.makabansa === "" ? null : Number(newGrades.makabansa),
+        gmrc: newGrades.gmrc === "" ? null : Number(newGrades.gmrc),
         mapeh: newGrades.mapeh === "" ? null : Number(newGrades.mapeh),
         average,
         gender: selectedStudent.gender,
@@ -328,14 +334,14 @@ const TeacherDashboard = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <label className="block mb-2">
-                <span>MTB-MLE</span>
+                <span>Language</span>
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
                   placeholder="Enter Grade"
-                  value={newGrades.mtb_mle}
+                  value={newGrades.language}
                   onChange={(e) =>
-                    setNewGrade({ ...newGrades, mtb_mle: e.target.value })
+                    setNewGrade({ ...newGrades, language: e.target.value })
                   }
                 />
               </label>
@@ -419,14 +425,40 @@ const TeacherDashboard = () => {
                 />
               </label>
               <label className="block mb-2">
-                <span>EPP</span>
+                <span>Reading</span>
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
                   placeholder="Enter Grade"
-                  value={newGrades.epp}
+                  value={newGrades.reading}
                   onChange={(e) =>
-                    setNewGrade({ ...newGrades, epp: e.target.value })
+                    setNewGrade({ ...newGrades, reading: e.target.value })
+                  }
+                />
+              </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block mb-2">
+                <span>Makabansa</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.makabansa}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, makabansa: e.target.value })
+                  }
+                />
+              </label>
+              <label className="block mb-2">
+                <span>GMRC</span>
+                <input
+                  type="number"
+                  className="w-full p-2 border rounded"
+                  placeholder="Enter Grade"
+                  value={newGrades.gmrc}
+                  onChange={(e) =>
+                    setNewGrade({ ...newGrades, gmrc: e.target.value })
                   }
                 />
               </label>
@@ -491,11 +523,11 @@ const TeacherDashboard = () => {
         </thead>
         <tbody>
           <tr>
-            <td className="border font-medium">MTB-MLE</td>
-            <td className="border text-center">{getGradeForSubject("mtb_mle", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mtb_mle", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mtb_mle", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mtb_mle", "4th Grading")}</td>
+            <td className="border font-medium">Language</td>
+            <td className="border text-center">{getGradeForSubject("language", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("language", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("language", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("language", "4th Grading")}</td>
           </tr>
           <tr>
             <td className="border font-medium">ESP</td>
@@ -540,11 +572,25 @@ const TeacherDashboard = () => {
             <td className="border text-center">{getGradeForSubject("ap", "4th Grading")}</td>
           </tr>
           <tr>
-            <td className="border font-medium">EPP</td>
-            <td className="border text-center">{getGradeForSubject("epp", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("epp", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("epp", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("epp", "4th Grading")}</td>
+            <td className="border font-medium">Reading</td>
+            <td className="border text-center">{getGradeForSubject("reading", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("reading", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("reading", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("readings", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">Makabansa</td>
+            <td className="border text-center">{getGradeForSubject("makabansa", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("makabansa", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("makabansa", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("makabansa", "4th Grading")}</td>
+          </tr>
+          <tr>
+            <td className="border font-medium">GMRC</td>
+            <td className="border text-center">{getGradeForSubject("gmrc", "1st Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("gmrc", "2nd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("gmrc", "3rd Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("gmrc", "4th Grading")}</td>
           </tr>
           <tr>
             <td className="border font-medium">MAPEH</td>

@@ -18,14 +18,16 @@ const StudentDashboard = () => {
 
   // Subject display names mapping
   const subjectDisplayNames = {
-    mtb_mle: "MTB-MLE",
+    language: "Language",
     esp: "ESP",
     english: "English",
     math: "Mathematics",
     science: "Science",
     filipino: "Filipino",
     ap: "Araling Panlipunan",
-    ep: "Edukasyon sa Pagpapakatao",
+    reading: "Reading & Literacy",
+    makabansa: "Makabansa",
+    gmrc: "GMRC",
     mapeh: "MAPEH",
     average: "General Average"
   };
@@ -92,8 +94,8 @@ const StudentDashboard = () => {
         // Transform the data to match the expected format
         const formattedGrades = Object.entries(gradeRecord)
           .filter(([key]) => [
-            "mtb_mle", "esp", "english", "math", "science", 
-            "filipino", "ap", "ep", "mapeh", "average"
+            "language", "esp", "english", "math", "science", 
+            "filipino", "ap", "reading", "makabansa", "gmrc", "mapeh", "average"
           ].includes(key))
           .map(([subject, grade]) => ({
             subject: subjectDisplayNames[subject] || subject,

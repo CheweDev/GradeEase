@@ -12,15 +12,17 @@ const AcademicRecords = () => {
   const [updatedStudent, setUpdatedStudent] = useState(null);
   const [selectedGradingPeriod, setSelectedGradingPeriod] = useState("1st Grading");
   const [studentGrades, setStudentGrades] = useState({
-    mtb_mle: "",
+    language: "",
     esp: "",
     english: "",
     math: "",
     science: "",
     filipino: "",
     ap: "",
-    epp: "",
+    reading: "",
     mapeh: "",
+    makabansa: "",
+    gmrc: "",
     average: "",
   });
 
@@ -51,16 +53,17 @@ const AcademicRecords = () => {
     setUpdatedStudent(student);
     setIsEditModalOpen(true);
     // Fetch grades for the initial grading period (1st)
-    fetchGrades(student.grade, "1st Grading");
+    fetchGrades(student.grade, "1st Grading", student.name);
   };
 
   // Fetch grades for the selected grading period
-  const fetchGrades = async (grade, gradingPeriod) => {
+  const fetchGrades = async (grade, gradingPeriod, name) => {
     try {
       const { data, error } = await supabase
         .from("Grades")
         .select("*")
         .eq("grade", grade)
+        .eq("name", name)
         .eq("grading", gradingPeriod)
         .single();
 
@@ -68,28 +71,32 @@ const AcademicRecords = () => {
         console.error("Error fetching grades:", error);
         // If no grades found, set empty grades
         setStudentGrades({
-          mtb_mle: "",
+          language: "",
           esp: "",
           english: "",
           math: "",
           science: "",
           filipino: "",
           ap: "",
-          epp: "",
+          reading: "",
           mapeh: "",
+          makabansa: "",
+          gmrc: "",
           average: "",
         });
       } else if (data) {
         setStudentGrades({
-          mtb_mle: data.mtb_mle || "",
+          language: data.language || "",
           esp: data.esp || "",
           english: data.english || "",
           math: data.math || "",
           science: data.science || "",
           filipino: data.filipino || "",
           ap: data.ap || "",
-          epp: data.epp || "",
+          reading: data.reading || "",
           mapeh: data.mapeh || "",
+          makabansa: data.makabansa || "",
+          gmrc: data.gmrc || "",
           average: data.average || "",
         });
       }
@@ -102,7 +109,7 @@ const AcademicRecords = () => {
   const handleGradingPeriodChange = (e) => {
     const period = e.target.value;
     setSelectedGradingPeriod(period);
-    fetchGrades(currentStudent.grade, period);
+    fetchGrades(currentStudent.grade, period, currentStudent.name);
   };
 
   // Handle changes to student grades
@@ -122,6 +129,7 @@ const AcademicRecords = () => {
         .from("Grades")
         .select("*")
         .eq("grade", currentStudent.grade)
+        .eq("name", currentStudent.name)
         .eq("grading", selectedGradingPeriod);
 
       if (existingRecord && existingRecord.length > 0) {
@@ -129,6 +137,7 @@ const AcademicRecords = () => {
           .from("Grades")
           .update(studentGrades)
           .eq("grade", currentStudent.grade)
+          .eq("name", currentStudent.name)
           .eq("grading", selectedGradingPeriod);
 
         if (error) throw error;
@@ -239,24 +248,24 @@ const AcademicRecords = () => {
                 </select>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-1">
                 <p className="font-medium">Student: {currentStudent?.name}</p>
                 <p>LRN: {currentStudent?.lrn}</p>
                 <p>Grade & Section: {currentStudent?.grade} - {currentStudent?.section}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="mb-3">
-                  <label className="block text-sm font-medium">MTB-MLE</label>
+                <div className="mb-1">
+                  <label className="block text-sm font-medium">Language</label>
                   <input
                     type="text"
-                    name="mtb_mle"
-                    value={studentGrades.mtb_mle}
+                    name="language"
+                    value={studentGrades.language}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">ESP</label>
                   <input
                     type="text"
@@ -266,7 +275,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">English</label>
                   <input
                     type="text"
@@ -276,7 +285,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">Math</label>
                   <input
                     type="text"
@@ -286,7 +295,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">Science</label>
                   <input
                     type="text"
@@ -296,7 +305,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">Filipino</label>
                   <input
                     type="text"
@@ -306,7 +315,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">AP</label>
                   <input
                     type="text"
@@ -316,17 +325,37 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
-                  <label className="block text-sm font-medium">EPP</label>
+                <div className="mb-1">
+                  <label className="block text-sm font-medium">Reading</label>
                   <input
                     type="text"
-                    name="epp"
-                    value={studentGrades.epp}
+                    name="reading"
+                    value={studentGrades.reading}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
+                  <label className="block text-sm font-medium">Makabansa</label>
+                  <input
+                    type="text"
+                    name="makabansa"
+                    value={studentGrades.makabansa}
+                    onChange={handleGradeChange}
+                    className="mt-1 p-2 border rounded w-full"
+                  />
+                </div>
+                <div className="mb-1">
+                  <label className="block text-sm font-medium">GMRC</label>
+                  <input
+                    type="text"
+                    name="gmrc"
+                    value={studentGrades.gmrc}
+                    onChange={handleGradeChange}
+                    className="mt-1 p-2 border rounded w-full"
+                  />
+                </div>
+                <div className="mb-1">
                   <label className="block text-sm font-medium">MAPEH</label>
                   <input
                     type="text"
@@ -336,7 +365,7 @@ const AcademicRecords = () => {
                     className="mt-1 p-2 border rounded w-full"
                   />
                 </div>
-                <div className="mb-3">
+                <div className="mb-1">
                   <label className="block text-sm font-medium">Average</label>
                   <input
                     type="text"

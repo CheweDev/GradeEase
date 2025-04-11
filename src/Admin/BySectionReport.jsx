@@ -17,14 +17,16 @@ const BySectionReport = () => {
   // List of subjects
   const subjects = [
     { value: "average", label: "All Subjects (Average)" },
-    { value: "mtb_mle", label: "MTB-MLE" },
+    { value: "language", label: "Language" },
     { value: "esp", label: "ESP" },
     { value: "english", label: "English" },
     { value: "math", label: "Math" },
     { value: "science", label: "Science" },
     { value: "filipino", label: "Filipino" },
     { value: "ap", label: "AP" },
-    { value: "epp", label: "EPP" },
+    { value: "reading", label: "Reading" },
+    { value: "makabansa", label: "Makabansa" },
+    { value: "gmrc", label: "GMRC" },
     { value: "mapeh", label: "MAPEH" },
   ];
 
@@ -125,14 +127,16 @@ const BySectionReport = () => {
           grade, 
           section, 
           gender,
-          mtb_mle,
+          language,
           esp,
           english,
           math,
           science,
           filipino,
           ap,
-          epp,
+          reading,
+          makabansa,
+          gmrc,
           mapeh,
           average,
           grading
