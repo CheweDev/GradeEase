@@ -102,7 +102,13 @@ const StudentDashboard = () => {
             grade: grade || "N/A"
           }));
         
-        setFilteredGrades(formattedGrades);
+          const sortedGrades = formattedGrades.sort((a, b) => {
+            if (a.subject === "General Average") return 1;
+            if (b.subject === "General Average") return -1;
+            return 0;
+          });
+          
+          setFilteredGrades(sortedGrades);
       } else {
         setFilteredGrades([]);
       }
