@@ -137,9 +137,22 @@ const TeacherDashboard = () => {
       .filter((grade) => grade !== null && !isNaN(grade)); 
   
 
-    const totalSubjects = subjects.length;
-    const totalSum = subjects.reduce((sum, grade) => sum + grade, 0);
-    const average = totalSubjects > 0 ? (totalSum / totalSubjects).toFixed(2) : null; 
+      const totalSubjects = subjects.length;
+      const totalSum = subjects.reduce((sum, grade) => sum + grade, 0);
+      
+      let average = null;
+      
+      if (totalSubjects > 0) {
+        const rawAverage = totalSum / totalSubjects;
+        const decimal = rawAverage % 1;
+      
+        if (decimal < 0.5) {
+          average = Math.floor(rawAverage);
+        } else {
+          average = Math.round(rawAverage);
+        }
+      }
+      
   
     const { data, error } = await supabase.from("Grades").insert([
       {
