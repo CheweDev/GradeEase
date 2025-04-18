@@ -5,6 +5,7 @@ import supabase from "../SupabaseClient.jsx";
 
 const StudentDashboard = () => {
   const studentName = sessionStorage.getItem("name");
+  const [schoolYears, setSchoolYears] = useState([]);
   const [filteredGrades, setFilteredGrades] = useState([]);
   const [studentInfo, setStudentInfo] = useState({
     name: "",
@@ -15,6 +16,16 @@ const StudentDashboard = () => {
   const [schoolYear, setSchoolYear] = useState("2025-2026");
   const [quarter, setQuarter] = useState("1st Grading");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSchoolYear();
+  }, []);
+
+  const fetchSchoolYear = async () => {
+    const { data } = await supabase.from("School Year")
+    .select("*")
+    setSchoolYears(data);
+  };
 
   // Subject display names mapping
   const subjectDisplayNames = {
@@ -151,15 +162,18 @@ const StudentDashboard = () => {
                 School Year:
               </label>
               <select
-                id="schoolYear"
-                value={schoolYear}
-                onChange={(e) => setSchoolYear(e.target.value)}
-                className="border border-gray-300 rounded-md p-2"
-              >
-                <option value="2025-2026">2025-2026</option>
-                <option value="2026-2027">2026-2027</option>
-                <option value="2027-2028">2027-2028</option>
-              </select>
+              id="schoolYear"
+              value={schoolYear}
+              onChange={(e) => setSchoolYear(e.target.value)}
+              className="border border-gray-300 rounded-md p-2"
+            >
+              <option value="">Select school year</option>
+              {schoolYears.map((year, index) => (
+                <option key={index} value={year.school_year}>
+                  {year.school_year}
+                </option>
+              ))}
+            </select>
             </div>
 
             <div className="flex items-center">
