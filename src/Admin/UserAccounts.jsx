@@ -38,6 +38,16 @@ const UserAccounts = () => {
       );
     }
   };
+  const handleDelete = async (userId) => {
+    const { error } = await supabase.from("Users").delete().eq("id", userId);
+  
+    if (error) {
+      console.error("Error deleting user:", error);
+    } else {
+      window.location.reload();
+    }
+  };
+  
 
   const filteredUsers = users.filter(
     (user) =>
@@ -91,7 +101,8 @@ const UserAccounts = () => {
                       >
                         {user.status === "Blocked" ? "Unblock" : "Block"}
                       </button>
-                      <button className="btn btn-error text-white btn-sm">
+                      <button className="btn btn-error text-white btn-sm"
+                      onClick={() => handleDelete(user.id)}>
                         Delete
                       </button>
                     </td>
