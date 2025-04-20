@@ -438,7 +438,7 @@ const TeacherDashboard = () => {
                 />
               </label>
               <label className="block mb-2">
-                <span>Reading</span>
+                <span>Reading and Literacy</span>
                 <input
                   type="number"
                   className="w-full p-2 border rounded"
