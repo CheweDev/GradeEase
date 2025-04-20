@@ -326,7 +326,7 @@ const AcademicRecords = () => {
                   />
                 </div>
                 <div className="mb-1">
-                  <label className="block text-sm font-medium">Reading</label>
+                  <label className="block text-sm font-medium">Reading and Literacy</label>
                   <input
                     type="text"
                     name="reading"

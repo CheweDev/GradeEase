@@ -235,7 +235,7 @@ const Advisors = () => {
               {/* Grade Level Input */}
               <label className="input w-full mb-4">
               <select
-                className="w-full"
+                className="w-full appearance-none "
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
               >
