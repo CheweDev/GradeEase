@@ -251,9 +251,21 @@ const TeacherSectionReport = () => {
     return Object.values(sectionGroups);
   };
 
-  const filteredData = sectionData.filter(row => 
-    row.level.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = sectionData
+    .filter(row => row.level.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      // Extract grade level number from strings like "1-A" or "Grade 1-A"
+      const getGradeNumber = (str) => {
+        // Try to find a number after "Grade " or at the start of the string
+        const match = str.match(/(?:Grade\s*)?(\d+)/i);
+        return match ? parseInt(match[1]) : 0;
+      };
+      
+      const gradeA = getGradeNumber(a.level);
+      const gradeB = getGradeNumber(b.level);
+      
+      return gradeA - gradeB;
+    });
 
   const handleSubjectChange = (e) => {
     setSelectedSubject(e.target.value);
