@@ -11,7 +11,7 @@ const TeacherSectionReport = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState("average");
-  const [selectedGrading, setSelectedGrading] = useState("all");
+  const [selectedGrading, setSelectedGrading] = useState("1st Grading");
   const [isExporting, setIsExporting] = useState(false);
 
   // List of subjects
@@ -32,7 +32,6 @@ const TeacherSectionReport = () => {
 
   // List of grading periods
   const gradingPeriods = [
-    { value: "all", label: "All Gradings" },
     { value: "1st Grading", label: "First Grading" },
     { value: "2nd Grading", label: "Second Grading" },
     { value: "3rd Grading", label: "Third Grading" },
@@ -371,60 +370,35 @@ const TeacherSectionReport = () => {
                   >
                     Outstanding (90-100)
                   </th>
-                  <th
-                    rowSpan="2"
-                    className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold w-12"
-                  >
-                    %
-                  </th>
+              
                   <th
                     colSpan="3"
                     className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold"
                   >
                     Very Satisfactory (85-89)
                   </th>
-                  <th
-                    rowSpan="2"
-                    className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold w-12"
-                  >
-                    %
-                  </th>
+               
                   <th
                     colSpan="3"
                     className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold"
                   >
                     Satisfactory (80-84)
                   </th>
-                  <th
-                    rowSpan="2"
-                    className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold w-12"
-                  >
-                    %
-                  </th>
+             
                   <th
                     colSpan="3"
                     className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold"
                   >
                     Fairly Satisfactory (75-79)
                   </th>
-                  <th
-                    rowSpan="2"
-                    className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold w-12"
-                  >
-                    %
-                  </th>
+             
                   <th
                     colSpan="3"
                     className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold"
                   >
                     Did not meet expectations (70-74)
                   </th>
-                  <th
-                    rowSpan="2"
-                    className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold w-12"
-                  >
-                    %
-                  </th>
+            
                   <th
                     colSpan="3"
                     className="border border-gray-400 bg-yellow-200 p-2 text-center font-bold"
@@ -517,9 +491,7 @@ const TeacherSectionReport = () => {
                       <td className="border border-gray-400 p-2 text-center bg-gray-50">
                         {row.outstanding.t}
                       </td>
-                      <td className="border border-gray-400 p-2 text-center">
-                        {row.outstanding.percent}
-                      </td>
+                   
   
                       <td className="border border-gray-400 p-2 text-center">
                         {row.verySatisfactory.m}
@@ -530,9 +502,7 @@ const TeacherSectionReport = () => {
                       <td className="border border-gray-400 p-2 text-center bg-gray-50">
                         {row.verySatisfactory.t}
                       </td>
-                      <td className="border border-gray-400 p-2 text-center">
-                        {row.verySatisfactory.percent}
-                      </td>
+               
   
                       <td className="border border-gray-400 p-2 text-center">
                         {row.satisfactory.m}
@@ -543,10 +513,7 @@ const TeacherSectionReport = () => {
                       <td className="border border-gray-400 p-2 text-center bg-gray-50">
                         {row.satisfactory.t}
                       </td>
-                      <td className="border border-gray-400 p-2 text-center">
-                        {row.satisfactory.percent}
-                      </td>
-  
+                  
                       <td className="border border-gray-400 p-2 text-center">
                         {row.fairlySatisfactory.m}
                       </td>
@@ -556,9 +523,7 @@ const TeacherSectionReport = () => {
                       <td className="border border-gray-400 p-2 text-center bg-gray-50">
                         {row.fairlySatisfactory.t}
                       </td>
-                      <td className="border border-gray-400 p-2 text-center">
-                        {row.fairlySatisfactory.percent}
-                      </td>
+                 
   
                       <td className="border border-gray-400 p-2 text-center">
                         {row.didNotMeet.m}
@@ -569,9 +534,7 @@ const TeacherSectionReport = () => {
                       <td className="border border-gray-400 p-2 text-center bg-gray-50">
                         {row.didNotMeet.t}
                       </td>
-                      <td className="border border-gray-400 p-2 text-center">
-                        {row.didNotMeet.percent}
-                      </td>
+                 
   
                       <td className="border border-gray-400 p-2 text-center">
                         {row.gpa.m}

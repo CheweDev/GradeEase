@@ -12,7 +12,7 @@ const ByGradeReport = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState("average");
-  const [selectedGrading, setSelectedGrading] = useState("all");
+  const [selectedGrading, setSelectedGrading] = useState("1st Grading");
   const [isExporting, setIsExporting] = useState(false);
 
   // List of subjects
@@ -33,7 +33,6 @@ const ByGradeReport = () => {
 
   // List of grading periods
   const gradingPeriods = [
-    { value: "all", label: "All Gradings" },
     { value: "1st Grading", label: "First Grading" },
     { value: "2nd Grading", label: "Second Grading" },
     { value: "3rd Grading", label: "Third Grading" },
@@ -442,27 +441,27 @@ const ByGradeReport = () => {
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     Outstanding <br /> (90-100%)
                   </th>
-                  <th className="p-2">%</th>
+
                   
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     Very Satisfactory <br /> (85-89%)
                   </th>
-                  <th className="p-2">%</th>
+
                   
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     Satisfactory <br /> (80-84%)
                   </th>
-                  <th className="p-2">%</th>
+
                   
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     Fairly Satisfactory <br /> (75-79%)
                   </th>
-                  <th className="p-2">%</th>
+
                   
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     Did Not Meet <br /> Expectation <br /> (70-74%)
                   </th>
-                  <th className="p-2">%</th>
+     
                   
                   <th colSpan="3" className="p-2 bg-yellow-100">
                     General Percentage <br /> Average (GPA)
@@ -480,32 +479,31 @@ const ByGradeReport = () => {
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
                   <th className="p-2 bg-gray-50">T</th>
-                  <th className="p-2"></th>
+    
                   
                   {/* Very Satisfactory */}
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
                   <th className="p-2 bg-gray-50">T</th>
-                  <th className="p-2"></th>
+       
                   
                   {/* Satisfactory */}
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
                   <th className="p-2 bg-gray-50">T</th>
-                  <th className="p-2"></th>
+      
                   
                   {/* Fairly Satisfactory */}
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
                   <th className="p-2 bg-gray-50">T</th>
-                  <th className="p-2"></th>
+
                   
                   {/* Did Not Meet */}
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
                   <th className="p-2 bg-gray-50">T</th>
-                  <th className="p-2"></th>
-                  
+   
                   {/* GPA */}
                   <th className="p-2 bg-blue-50">M</th>
                   <th className="p-2 bg-pink-50">F</th>
@@ -529,31 +527,31 @@ const ByGradeReport = () => {
                         <td className="p-2 bg-blue-50">{row.outstanding.m}</td>
                         <td className="p-2 bg-pink-50">{row.outstanding.f}</td>
                         <td className="p-2 bg-gray-50 font-medium">{row.outstanding.t}</td>
-                        <td className="p-2">{row.outstanding.percent}%</td>
+     
                         
                         {/* Very Satisfactory */}
                         <td className="p-2 bg-blue-50">{row.verySatisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{row.verySatisfactory.f}</td>
                         <td className="p-2 bg-gray-50 font-medium">{row.verySatisfactory.t}</td>
-                        <td className="p-2">{row.verySatisfactory.percent}%</td>
+
                         
                         {/* Satisfactory */}
                         <td className="p-2 bg-blue-50">{row.satisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{row.satisfactory.f}</td>
                         <td className="p-2 bg-gray-50 font-medium">{row.satisfactory.t}</td>
-                        <td className="p-2">{row.satisfactory.percent}%</td>
+         
                         
                         {/* Fairly Satisfactory */}
                         <td className="p-2 bg-blue-50">{row.fairlySatisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{row.fairlySatisfactory.f}</td>
                         <td className="p-2 bg-gray-50 font-medium">{row.fairlySatisfactory.t}</td>
-                        <td className="p-2">{row.fairlySatisfactory.percent}%</td>
+          
                         
                         {/* Did Not Meet */}
                         <td className="p-2 bg-blue-50">{row.didNotMeet.m}</td>
                         <td className="p-2 bg-pink-50">{row.didNotMeet.f}</td>
                         <td className="p-2 bg-gray-50 font-medium">{row.didNotMeet.t}</td>
-                        <td className="p-2">{row.didNotMeet.percent}%</td>
+           
                         
                         {/* GPA */}
                         <td className="p-2 bg-blue-50">{row.gpa.m}</td>
@@ -576,31 +574,30 @@ const ByGradeReport = () => {
                         <td className="p-2 bg-blue-50">{totals.outstanding.m}</td>
                         <td className="p-2 bg-pink-50">{totals.outstanding.f}</td>
                         <td className="p-2 bg-gray-50">{totals.outstanding.t}</td>
-                        <td className="p-2">{totals.outstanding.percent}%</td>
+            
                         
                         {/* Very Satisfactory */}
                         <td className="p-2 bg-blue-50">{totals.verySatisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{totals.verySatisfactory.f}</td>
                         <td className="p-2 bg-gray-50">{totals.verySatisfactory.t}</td>
-                        <td className="p-2">{totals.verySatisfactory.percent}%</td>
+               
                         
                         {/* Satisfactory */}
                         <td className="p-2 bg-blue-50">{totals.satisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{totals.satisfactory.f}</td>
                         <td className="p-2 bg-gray-50">{totals.satisfactory.t}</td>
-                        <td className="p-2">{totals.satisfactory.percent}%</td>
+                   
                         
                         {/* Fairly Satisfactory */}
                         <td className="p-2 bg-blue-50">{totals.fairlySatisfactory.m}</td>
                         <td className="p-2 bg-pink-50">{totals.fairlySatisfactory.f}</td>
                         <td className="p-2 bg-gray-50">{totals.fairlySatisfactory.t}</td>
-                        <td className="p-2">{totals.fairlySatisfactory.percent}%</td>
+                
                         
                         {/* Did Not Meet */}
                         <td className="p-2 bg-blue-50">{totals.didNotMeet.m}</td>
                         <td className="p-2 bg-pink-50">{totals.didNotMeet.f}</td>
                         <td className="p-2 bg-gray-50">{totals.didNotMeet.t}</td>
-                        <td className="p-2">{totals.didNotMeet.percent}%</td>
                         
                         {/* GPA */}
                         <td className="p-2 bg-blue-50">{totals.gpa.m}</td>
