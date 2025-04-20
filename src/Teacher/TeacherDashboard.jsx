@@ -346,150 +346,210 @@ const TeacherDashboard = () => {
               </label>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>Language</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.language}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, language: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>ESP</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.esp}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, esp: e.target.value })
-                  }
-                />
-              </label>
-              </div>
+  <label className="block mb-2">
+    <span>Language</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.language}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, language: value });
+        }
+      }}
+    />
+  </label>
+  <label className="block mb-2">
+    <span>ESP</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.esp}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, esp: value });
+        }
+      }}
+    />
+  </label>
+</div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>English</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.english}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, english: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>Math</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                   placeholder="Enter Grade"
-                  value={newGrades.math}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, math: e.target.value })
-                  }
-                />
-              </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>Science</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.science}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, science: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>Filipino</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.filipino}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, filipino: e.target.value })
-                  }
-                />
-              </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>AP</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.ap}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, ap: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>Reading and Literacy</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.reading}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, reading: e.target.value })
-                  }
-                />
-              </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="block mb-2">
-                <span>Makabansa</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.makabansa}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, makabansa: e.target.value })
-                  }
-                />
-              </label>
-              <label className="block mb-2">
-                <span>GMRC</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.gmrc}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, gmrc: e.target.value })
-                  }
-                />
-              </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>MAPEH</span>
-                <input
-                  type="number"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Grade"
-                  value={newGrades.mapeh}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, mapeh: e.target.value })
-                  }
-                />
-              </label>
-              </div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <label className="block mb-2">
+    <span>English</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.english}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, english: value });
+        }
+      }}
+    />
+  </label>
+  <label className="block mb-2">
+    <span>Math</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.math}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, math: value });
+        }
+      }}
+    />
+  </label>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <label className="block mb-2">
+    <span>Science</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.science}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, science: value });
+        }
+      }}
+    />
+  </label>
+  <label className="block mb-2">
+    <span>Filipino</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.filipino}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, filipino: value });
+        }
+      }}
+    />
+  </label>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <label className="block mb-2">
+    <span>AP</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.ap}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, ap: value });
+        }
+      }}
+    />
+  </label>
+  <label className="block mb-2">
+    <span>Reading and Literacy</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.reading}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, reading: value });
+        }
+      }}
+    />
+  </label>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <label className="block mb-2">
+    <span>Makabansa</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.makabansa}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, makabansa: value });
+        }
+      }}
+    />
+  </label>
+  <label className="block mb-2">
+    <span>GMRC</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.gmrc}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, gmrc: value });
+        }
+      }}
+    />
+  </label>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <label className="block mb-2">
+    <span>MAPEH</span>
+    <input
+      type="number"
+      min="10"
+      max="99"
+      className="w-full p-2 border rounded"
+      placeholder="Enter Grade"
+      value={newGrades.mapeh}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+          setNewGrade({ ...newGrades, mapeh: value });
+        }
+      }}
+    />
+  </label>
+</div>
+
 
       
 
