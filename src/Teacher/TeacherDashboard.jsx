@@ -589,7 +589,7 @@ const TeacherDashboard = () => {
             <td className="border text-center">{getGradeForSubject("reading", "1st Grading")}</td>
             <td className="border text-center">{getGradeForSubject("reading", "2nd Grading")}</td>
             <td className="border text-center">{getGradeForSubject("reading", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("readings", "4th Grading")}</td>
+            <td className="border text-center">{getGradeForSubject("reading", "4th Grading")}</td>
           </tr>
           <tr>
             <td className="border font-medium">Makabansa</td>
