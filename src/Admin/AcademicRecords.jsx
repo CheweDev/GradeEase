@@ -115,15 +115,51 @@ const AcademicRecords = () => {
   // Handle changes to student grades
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
-    setStudentGrades({
+    const updatedGrades = {
       ...studentGrades,
       [name]: value,
-    });
+    };
+
+    // Calculate average if the grade is a valid number
+    if (value !== "" && !isNaN(value)) {
+      const validGrades = Object.entries(updatedGrades)
+        .filter(([key, val]) => key !== 'average' && val !== "" && !isNaN(val))
+        .map(([_, val]) => parseInt(val));
+
+      if (validGrades.length > 0) {
+        const sum = validGrades.reduce((acc, curr) => acc + curr, 0);
+        updatedGrades.average = Math.round(sum / validGrades.length);
+      } else {
+        updatedGrades.average = "";
+      }
+    } else {
+      // Recalculate average if a grade was cleared
+      const validGrades = Object.entries(updatedGrades)
+        .filter(([key, val]) => key !== 'average' && val !== "" && !isNaN(val))
+        .map(([_, val]) => parseInt(val));
+
+      if (validGrades.length > 0) {
+        const sum = validGrades.reduce((acc, curr) => acc + curr, 0);
+        updatedGrades.average = Math.round(sum / validGrades.length);
+      } else {
+        updatedGrades.average = "";
+      }
+    }
+
+    setStudentGrades(updatedGrades);
   };
 
   // Update student grades in the database
   const updateGrades = async () => {
     try {
+      // Convert empty strings to null for bigint fields
+      const gradesToUpdate = Object.fromEntries(
+        Object.entries(studentGrades).map(([key, value]) => [
+          key,
+          value === "" ? null : parseInt(value)
+        ])
+      );
+
       // Check if record exists
       const { data: existingRecord } = await supabase
         .from("Grades")
@@ -135,7 +171,7 @@ const AcademicRecords = () => {
       if (existingRecord && existingRecord.length > 0) {
         const { error } = await supabase
           .from("Grades")
-          .update(studentGrades)
+          .update(gradesToUpdate)
           .eq("grade", currentStudent.grade)
           .eq("name", currentStudent.name)
           .eq("grading", selectedGradingPeriod);
@@ -154,14 +190,14 @@ const AcademicRecords = () => {
               section: currentStudent.section,
               school_year,
               grading: selectedGradingPeriod,
-              ...studentGrades
+              ...gradesToUpdate
             }
           ]);
 
         if (error) throw error;
       }
 
-     window.location.reload();
+      window.location.reload();
       
     } catch (error) {
       console.error("Error updating grades:", error);
@@ -258,121 +294,158 @@ const AcademicRecords = () => {
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Language</label>
                   <input
-                    type="text"
+                    type="number"
                     name="language"
                     value={studentGrades.language}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">ESP</label>
                   <input
-                    type="text"
+                    type="number"
                     name="esp"
                     value={studentGrades.esp}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">English</label>
                   <input
-                    type="text"
+                    type="number"
                     name="english"
                     value={studentGrades.english}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Math</label>
                   <input
-                    type="text"
+                    type="number"
                     name="math"
                     value={studentGrades.math}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Science</label>
                   <input
-                    type="text"
+                    type="number"
                     name="science"
                     value={studentGrades.science}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Filipino</label>
                   <input
-                    type="text"
+                    type="number"
                     name="filipino"
                     value={studentGrades.filipino}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">AP</label>
                   <input
-                    type="text"
+                    type="number"
                     name="ap"
                     value={studentGrades.ap}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Reading and Literacy</label>
                   <input
-                    type="text"
+                    type="number"
                     name="reading"
                     value={studentGrades.reading}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Makabansa</label>
                   <input
-                    type="text"
+                    type="number"
                     name="makabansa"
                     value={studentGrades.makabansa}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">GMRC</label>
                   <input
-                    type="text"
+                    type="number"
                     name="gmrc"
                     value={studentGrades.gmrc}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">MAPEH</label>
                   <input
-                    type="text"
+                    type="number"
                     name="mapeh"
                     value={studentGrades.mapeh}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Average</label>
                   <input
-                    type="text"
+                    type="number"
                     name="average"
                     value={studentGrades.average}
                     onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
+                    min="0"
+                    max="100"
+                    step="1"
+                    readOnly
                   />
                 </div>
               </div>
