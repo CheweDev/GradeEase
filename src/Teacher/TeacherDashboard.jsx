@@ -33,6 +33,8 @@ const TeacherDashboard = () => {
     mapeh: "",
     average: "",
   });
+  const [hasExistingGrades, setHasExistingGrades] = useState(false);
+  const [existingGrades, setExistingGrades] = useState(null);
 
   useEffect(() => {
     fetchAdvisers();
@@ -69,12 +71,13 @@ const TeacherDashboard = () => {
 
   };
 
-  const fetchStudentGrades = async (studentName, studentGrade) => {
+  const fetchStudentGrades = async (studentName, studentGrade, gradingPeriod) => {
     const { data, error } = await supabase
       .from("Grades")
       .select("*")
       .eq("name", studentName)
-      .eq("grade", studentGrade);
+      .eq("grade", studentGrade)
+      .eq("grading", gradingPeriod);
 
     if (error) {
       console.error("Error fetching grades:", error);
@@ -82,6 +85,44 @@ const TeacherDashboard = () => {
     }
 
     setStudentGrades(data || []);
+    setHasExistingGrades(data && data.length > 0);
+    if (data && data.length > 0) {
+      setExistingGrades(data[0]);
+      // Set the existing grades in the newGrades state
+      setNewGrade({
+        ...newGrades,
+        language: data[0].language || "",
+        esp: data[0].esp || "",
+        english: data[0].english || "",
+        math: data[0].math || "",
+        science: data[0].science || "",
+        filipino: data[0].filipino || "",
+        ap: data[0].ap || "",
+        reading: data[0].reading || "",
+        makabansa: data[0].makabansa || "",
+        gmrc: data[0].gmrc || "",
+        mapeh: data[0].mapeh || "",
+        average: data[0].average || "",
+      });
+    } else {
+      setExistingGrades(null);
+      // Reset the grades if none exist
+      setNewGrade({
+        ...newGrades,
+        language: "",
+        esp: "",
+        english: "",
+        math: "",
+        science: "",
+        filipino: "",
+        ap: "",
+        reading: "",
+        makabansa: "",
+        gmrc: "",
+        mapeh: "",
+        average: "",
+      });
+    }
   };
 
 
@@ -117,6 +158,12 @@ const TeacherDashboard = () => {
 
   const handleGradeSubmit = async (e) => {
     e.preventDefault();
+    
+    if (hasExistingGrades) {
+      alert("Grades already exist for this student in the selected grading period.");
+      return;
+    }
+
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
     const school_year = `${currentYear}-${nextYear}`;
@@ -274,16 +321,17 @@ const TeacherDashboard = () => {
                       className="btn btn-sm btn-outline"
                       onClick={() => {
                         setSelectedStudent(student);
+                        setNewGrade({ ...newGrades, grading: "" });
                         document.getElementById("grade_modal").showModal();
                       }}
                     >
-                      Add Grades
+                      {hasExistingGrades ? "View/Edit Grades" : "Add Grades"}
                     </button>
                     <button
                       className="btn btn-sm btn-outline btn-info"
                       onClick={() => {
                         setSelectedStudent(student);
-                        fetchStudentGrades(student.name, student.grade);
+                        fetchStudentGrades(student.name, student.grade, "1st Grading");
                         document.getElementById("view_grades_modal").showModal();
                       }}
                     >
@@ -317,7 +365,7 @@ const TeacherDashboard = () => {
         <dialog id="grade_modal" className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg">
-              Add Grades for {selectedStudent?.name}
+              {hasExistingGrades ? "View/Edit Grades for" : "Add Grades for"} {selectedStudent?.name}
             </h3>
             {/* Form for Grades */}
             <form onSubmit={handleGradeSubmit}>
@@ -333,9 +381,12 @@ const TeacherDashboard = () => {
                 <select
                   className="w-full p-2 border rounded"
                   value={newGrades.grading}
-                  onChange={(e) =>
-                    setNewGrade({ ...newGrades, grading: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setNewGrade({ ...newGrades, grading: e.target.value });
+                    if (selectedStudent) {
+                      fetchStudentGrades(selectedStudent.name, selectedStudent.grade, e.target.value);
+                    }
+                  }}
                 >
                   <option value="" disabled>Select Grading Period</option>
                   <option value="1st Grading">1st Grading</option>
@@ -346,212 +397,220 @@ const TeacherDashboard = () => {
               </label>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-  <label className="block mb-2">
-    <span>Language</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.language}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, language: value });
-        }
-      }}
-    />
-  </label>
-  <label className="block mb-2">
-    <span>ESP</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.esp}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, esp: value });
-        }
-      }}
-    />
-  </label>
-</div>
+                <label className="block mb-2">
+                  <span>Language</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.language}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, language: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>ESP</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.esp}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, esp: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-  <label className="block mb-2">
-    <span>English</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.english}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, english: value });
-        }
-      }}
-    />
-  </label>
-  <label className="block mb-2">
-    <span>Math</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.math}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, math: value });
-        }
-      }}
-    />
-  </label>
-</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>English</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.english}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, english: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>Math</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.math}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, math: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-  <label className="block mb-2">
-    <span>Science</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.science}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, science: value });
-        }
-      }}
-    />
-  </label>
-  <label className="block mb-2">
-    <span>Filipino</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.filipino}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, filipino: value });
-        }
-      }}
-    />
-  </label>
-</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>Science</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.science}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, science: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>Filipino</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.filipino}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, filipino: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-  <label className="block mb-2">
-    <span>AP</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.ap}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, ap: value });
-        }
-      }}
-    />
-  </label>
-  <label className="block mb-2">
-    <span>Reading and Literacy</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.reading}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, reading: value });
-        }
-      }}
-    />
-  </label>
-</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>AP</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.ap}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, ap: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>Reading and Literacy</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.reading}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, reading: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <label className="block mb-2">
-    <span>Makabansa</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.makabansa}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, makabansa: value });
-        }
-      }}
-    />
-  </label>
-  <label className="block mb-2">
-    <span>GMRC</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.gmrc}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, gmrc: value });
-        }
-      }}
-    />
-  </label>
-</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="block mb-2">
+                  <span>Makabansa</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.makabansa}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, makabansa: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+                <label className="block mb-2">
+                  <span>GMRC</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.gmrc}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, gmrc: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-  <label className="block mb-2">
-    <span>MAPEH</span>
-    <input
-      type="number"
-      min="10"
-      max="99"
-      className="w-full p-2 border rounded"
-      placeholder="Enter Grade"
-      value={newGrades.mapeh}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
-          setNewGrade({ ...newGrades, mapeh: value });
-        }
-      }}
-    />
-  </label>
-</div>
-
-
-      
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <label className="block mb-2">
+                  <span>MAPEH</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="99"
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter Grade"
+                    value={newGrades.mapeh}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                        setNewGrade({ ...newGrades, mapeh: value });
+                      }
+                    }}
+                    readOnly={hasExistingGrades}
+                  />
+                </label>
+              </div>
 
               {/* Modal Footer */}
               <div className="modal-action">
@@ -560,11 +619,13 @@ const TeacherDashboard = () => {
                   className="btn"
                   onClick={() => document.getElementById("grade_modal").close()}
                 >
-                  Cancel
+                  Close
                 </button>
-                <button type="submit" className="btn bg-[#333] text-white">
-                  Save Grades
-                </button>
+                {!hasExistingGrades && (
+                  <button type="submit" className="btn bg-[#333] text-white">
+                    Save Grades
+                  </button>
+                )}
               </div>
             </form>
           </div>
