@@ -58,15 +58,48 @@ const ProficiencyDistribution = () => {
   
     const grades = ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"];
     const gradeStats = {};
-  
+    
+    // Track unique students by name within each grade
+    const uniqueStudentsByGrade = {};
+    
+    // Initialize unique student sets for each grade
     grades.forEach(grade => {
-      const total = data.filter(student => student.grade === grade).length;
-      const outstanding = data.filter(student => student.grade === grade && student.average >= 90).length;
-      const verySatisfactory = data.filter(student => student.grade === grade && student.average >= 85 && student.average <= 89).length;
-      const satisfactory = data.filter(student => student.grade === grade && student.average >= 80 && student.average <= 84).length;
-      const fairlySatisfactory = data.filter(student => student.grade === grade && student.average >= 75 && student.average <= 79).length;
-      const failed = data.filter(student => student.grade === grade && student.average <= 74).length;
-  
+      uniqueStudentsByGrade[grade] = new Set();
+    });
+
+    grades.forEach(grade => {
+      // Filter students for this grade
+      const gradeStudents = data.filter(student => student.grade === grade);
+      
+      // Track unique students and their scores
+      const uniqueStudents = new Set();
+      const studentScores = {};
+      
+      gradeStudents.forEach(student => {
+        const studentName = student.name?.trim().toLowerCase();
+        
+        // Skip if we've already processed this student
+        if (uniqueStudentsByGrade[grade].has(studentName)) {
+          return;
+        }
+        
+        // Add student to unique set
+        uniqueStudentsByGrade[grade].add(studentName);
+        
+        // Track student's average score
+        if (student.average !== null && student.average !== undefined) {
+          studentScores[studentName] = student.average;
+        }
+      });
+
+      // Calculate statistics based on unique students
+      const total = uniqueStudentsByGrade[grade].size;
+      const outstanding = Object.values(studentScores).filter(score => score >= 90).length;
+      const verySatisfactory = Object.values(studentScores).filter(score => score >= 85 && score <= 89).length;
+      const satisfactory = Object.values(studentScores).filter(score => score >= 80 && score <= 84).length;
+      const fairlySatisfactory = Object.values(studentScores).filter(score => score >= 75 && score <= 79).length;
+      const failed = Object.values(studentScores).filter(score => score <= 74).length;
+
       gradeStats[grade] = {
         total,
         outstanding,
