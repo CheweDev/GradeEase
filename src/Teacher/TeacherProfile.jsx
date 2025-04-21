@@ -29,7 +29,14 @@ const TeacherProfile = () => {
 
   const fetchPasswordData = async (e) => {
     e.preventDefault();
-    
+
+    // Validate new password
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password.newPassword)) {
+        alert("New password must be at least 8 characters long, include at least one number, one lowercase letter, and one uppercase letter.");
+        return;
+    }
+
     const { data, error } = await supabase
         .from("Users")
         .select("*")
@@ -53,7 +60,6 @@ const TeacherProfile = () => {
 
     updatePassword(); 
 };
-
 
 const updatePassword = async () => {
   const { data, error } = await supabase

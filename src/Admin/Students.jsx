@@ -228,6 +228,7 @@ const Students = () => {
               <span>LRN Number</span>
               <input
                 type="text"
+                maxLength={12}
                 className="w-full p-2 border rounded"
                 placeholder="Enter LRN"
                 value={newStudent.lrn}
@@ -373,6 +374,7 @@ const Students = () => {
                   <span>LRN Number</span>
                   <input
                     type="text"
+                    maxLength={12}
                     className="w-full p-2 border rounded"
                     placeholder="Enter LRN"
                     value={editingStudent.lrn}
