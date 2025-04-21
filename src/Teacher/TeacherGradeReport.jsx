@@ -1,4 +1,3 @@
-
 import TeacherSidebar from "./TeacherSidebar.jsx";
 import Header from "../Admin/Header.jsx";
 import { RiFileExcel2Fill } from "react-icons/ri";
@@ -103,10 +102,12 @@ const TeacherGradeReport = () => {
         return;
       }
       
+      // Format the grade key to ensure consistent format
       const gradeKey = `${grade.grade}`;
       if (!gradeGroups[gradeKey]) {
           gradeGroups[gradeKey] = {
               grade: gradeKey,
+              gradeNumber: parseInt(grade.grade), // Add grade number for sorting
               enrollment: { m: 0, f: 0, t: 0 },
               outstanding: { m: 0, f: 0, t: 0, percent: 0 },
               verySatisfactory: { m: 0, f: 0, t: 0, percent: 0 },
@@ -177,9 +178,15 @@ const TeacherGradeReport = () => {
 
     // Convert to array and sort by grade level
     return Object.values(gradeGroups).sort((a, b) => {
-      const aNum = parseInt(a.grade.replace('GRADE ', ''));
-      const bNum = parseInt(b.grade.replace('GRADE ', ''));
-      return aNum - bNum;
+      // Extract grade numbers from strings like "Grade 1"
+      const getGradeNumber = (str) => {
+        const match = str.match(/Grade (\d+)/i) || str.match(/(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      };
+      
+      const gradeA = getGradeNumber(a.grade);
+      const gradeB = getGradeNumber(b.grade);
+      return gradeA - gradeB;
     });
   };
 

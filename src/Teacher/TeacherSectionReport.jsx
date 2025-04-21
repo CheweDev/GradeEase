@@ -176,10 +176,15 @@ const TeacherSectionReport = () => {
         return;
       }
       
-      const sectionKey = `${grade.grade}-${grade.section}`;
+      // Format the section key to ensure consistent format
+      const gradeLevel = grade.grade.toString().trim();
+      const section = grade.section.toString().trim();
+      const sectionKey = `Grade ${gradeLevel}-${section}`;
+      
       if (!sectionGroups[sectionKey]) {
           sectionGroups[sectionKey] = {
               level: sectionKey,
+              gradeNumber: parseInt(gradeLevel), // Add grade number for sorting
               enrollment: { m: 0, f: 0, t: 0 },
               outstanding: { m: 0, f: 0, t: 0, percent: 0 },
               verySatisfactory: { m: 0, f: 0, t: 0, percent: 0 },
@@ -194,41 +199,41 @@ const TeacherSectionReport = () => {
           };
       }
   
-      const section = sectionGroups[sectionKey];
+      const sectionData = sectionGroups[sectionKey];
   
       // Fix: Trim and lower case comparison
       const gender = grade.gender?.trim().toLowerCase() === 'male' ? 'Male' : 'Female';
       const genderKey = gender === 'Male' ? 'm' : 'f';
   
       // Fix: Correct enrollment counting
-      section.enrollment[genderKey]++;
-      section.enrollment.t++;
+      sectionData.enrollment[genderKey]++;
+      sectionData.enrollment.t++;
   
       // Fix: Correct male and female score counting
       if (gender === 'Male') {
-          section.maleCount++;
-          section.maleTotalScore += scoreToUse;
+          sectionData.maleCount++;
+          sectionData.maleTotalScore += scoreToUse;
       } else {
-          section.femaleCount++;
-          section.femaleTotalScore += scoreToUse;
+          sectionData.femaleCount++;
+          sectionData.femaleTotalScore += scoreToUse;
       }
   
       // Fix: Correct category assignments
       if (scoreToUse >= 90) {
-          section.outstanding[genderKey]++;
-          section.outstanding.t++;
+          sectionData.outstanding[genderKey]++;
+          sectionData.outstanding.t++;
       } else if (scoreToUse >= 85) {
-          section.verySatisfactory[genderKey]++;
-          section.verySatisfactory.t++;
+          sectionData.verySatisfactory[genderKey]++;
+          sectionData.verySatisfactory.t++;
       } else if (scoreToUse >= 80) {
-          section.satisfactory[genderKey]++;
-          section.satisfactory.t++;
+          sectionData.satisfactory[genderKey]++;
+          sectionData.satisfactory.t++;
       } else if (scoreToUse >= 75) {
-          section.fairlySatisfactory[genderKey]++;
-          section.fairlySatisfactory.t++;
+          sectionData.fairlySatisfactory[genderKey]++;
+          sectionData.fairlySatisfactory.t++;
       } else {
-          section.didNotMeet[genderKey]++;
-          section.didNotMeet.t++;
+          sectionData.didNotMeet[genderKey]++;
+          sectionData.didNotMeet.t++;
       }
     });
   
