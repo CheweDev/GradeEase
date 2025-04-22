@@ -51,6 +51,34 @@ const Advisors = () => {
 
   const addAdvisor = async (e) => {
     e.preventDefault();
+
+    // Check if advisor already exists with the same name
+    const { data: existingAdvisor } = await supabase
+      .from("Advisers")
+      .select("*")
+      .eq("name", name)
+      .eq("advisory", advisory)
+      .eq("grade", grade)
+      .single();
+
+    if (existingAdvisor) {
+      alert("This teacher already exists. Duplicate records are not allowed");
+      return;
+    }
+
+    // Check if the advisory section is already assigned to another teacher
+    const { data: existingAdvisory } = await supabase
+      .from("Advisers")
+      .select("*")
+      .eq("advisory", advisory)
+      .eq("grade", grade)
+      .single();
+
+    if (existingAdvisory) {
+      alert("This section is already assigned to another teacher");
+      return;
+    }
+
     const { data, error } = await supabase.from("Advisers").insert([
       {
         name,
@@ -108,6 +136,34 @@ const Advisors = () => {
   // Update advisor
   const updateAdvisor = async (e) => {
     e.preventDefault();
+
+    // Check if advisor already exists with the same name (excluding current advisor)
+    const { data: existingAdvisor } = await supabase
+      .from("Advisers")
+      .select("*")
+      .eq("name", name)
+      .neq("id", editId)
+      .single();
+
+    if (existingAdvisor) {
+      alert("This teacher already exists. Duplicate records are not allowed");
+      return;
+    }
+
+    // Check if the advisory section is already assigned to another teacher (excluding current advisor)
+    const { data: existingAdvisory } = await supabase
+      .from("Advisers")
+      .select("*")
+      .eq("advisory", advisory)
+      .eq("grade", grade)
+      .neq("id", editId)
+      .single();
+
+    if (existingAdvisory) {
+      alert("This section is already assigned to another teacher");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("Advisers")
       .update({
