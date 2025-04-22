@@ -168,52 +168,53 @@ const Section = () => {
                 {editingSection ? "Edit Section" : "Add New Section"}
               </h3>
 
-              {/* Section Name Input */}
-              <label className="input w-full mb-4">
-                <input
-                  type="text"
-                  className="w-full p-2 rounded"
-                  placeholder="Enter section name (e.g., Section A)"
-                  value={section}
-                  onChange={(e) => setSection(e.target.value)}
-                />
-              </label>
+              <form onSubmit={editingSection ? handleUpdateSection : handleAddSection}>
+                {/* Section Name Input */}
+                <label className="input w-full mb-4">
+                  <input
+                    type="text"
+                    className="w-full p-2 rounded"
+                    placeholder="Enter section name (e.g., Section A)"
+                    value={section}
+                    onChange={(e) => setSection(e.target.value)}
+                    required
+                  />
+                </label>
 
-              {/* Grade Level Input */}
-              <label className="input w-full mb-4">
-                <select
-                  className="w-full p-2 rounded"
-                  value={grade_level}
-                  onChange={(e) => setGradeLevel(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select grade level
-                  </option>
-                  <option value="Grade 1">Grade 1</option>
-                  <option value="Grade 2">Grade 2</option>
-                  <option value="Grade 3">Grade 3</option>
-                  <option value="Grade 4">Grade 4</option>
-                  <option value="Grade 5">Grade 5</option>
-                  <option value="Grade 6">Grade 6</option>
-                </select>
-              </label>
+                {/* Grade Level Input */}
+                <label className="input w-full mb-4">
+                  <select
+                    className="w-full p-2 rounded"
+                    value={grade_level}
+                    onChange={(e) => setGradeLevel(e.target.value)}
+                    required
+                  >
+                    <option value="">Select grade level</option>
+                    <option value="Grade 1">Grade 1</option>
+                    <option value="Grade 2">Grade 2</option>
+                    <option value="Grade 3">Grade 3</option>
+                    <option value="Grade 4">Grade 4</option>
+                    <option value="Grade 5">Grade 5</option>
+                    <option value="Grade 6">Grade 6</option>
+                  </select>
+                </label>
 
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn bg-[#333] text-white"
-                  onClick={
-                    editingSection ? handleUpdateSection : handleAddSection
-                  }
-                >
-                  {editingSection ? "Save Changes" : "Add"}
-                </button>
-              </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn bg-[#333] text-white"
+                  >
+                    {editingSection ? "Save Changes" : "Add"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

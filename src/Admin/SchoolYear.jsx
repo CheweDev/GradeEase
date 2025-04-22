@@ -115,54 +115,60 @@ const SchoolYear = () => {
           </table>
         </div>
 
-        {/* Modal for Adding New Year (remains the same) */}
+        {/* Modal for Adding New Year */}
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
             <div className="bg-white p-6 rounded shadow-lg w-96">
               <h3 className="text-lg font-semibold mb-4">
                 Add New School Year
               </h3>
-              <label className="input w-full mb-4">
-                <svg
-                  className="h-[1em] opacity-50"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="4" width="18" height="16" rx="2" />
-                  <path d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
+              <form onSubmit={handleAddSchoolYear}>
+                <label className="input w-full mb-4">
+                  <svg
+                    className="h-[1em] opacity-50"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M16 2v4M8 2v4M3 10h18" />
+                  </svg>
 
-                <input
-                type="text"
-                className="w-full p-2 rounded"
-                placeholder="Enter school year (e.g., 2024-2025)"
-                value={school_year}
-                onChange={(e) => {
-                  const onlyNumbersAndDash = e.target.value.replace(/[^0-9-]/g, '');
-                  setSchoolYear(onlyNumbersAndDash);
-                }}
-              />
-              </label>
+                  <input
+                    type="text"
+                    className="w-full p-2 rounded"
+                    placeholder="Enter school year (e.g., 2024-2025)"
+                    value={school_year}
+                    onChange={(e) => {
+                      const onlyNumbersAndDash = e.target.value.replace(/[^0-9-]/g, '');
+                      setSchoolYear(onlyNumbersAndDash);
+                    }}
+                    pattern="\d{4}-\d{4}"
+                    title="Please enter a valid school year format (e.g., 2024-2025)"
+                    required
+                  />
+                </label>
 
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn bg-[#333] text-white"
-                  onClick={handleAddSchoolYear}
-                >
-                  Add
-                </button>
-              </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn bg-[#333] text-white"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
