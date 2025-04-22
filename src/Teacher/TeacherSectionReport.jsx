@@ -179,7 +179,7 @@ const TeacherSectionReport = () => {
       // Format the section key to ensure consistent format
       const gradeLevel = grade.grade.toString().trim();
       const section = grade.section.toString().trim();
-      const sectionKey = `Grade ${gradeLevel}-${section}`;
+      const sectionKey = `${gradeLevel}-${section}`;
       
       if (!sectionGroups[sectionKey]) {
           sectionGroups[sectionKey] = {
