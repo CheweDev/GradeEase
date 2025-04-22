@@ -71,13 +71,12 @@ const TeacherDashboard = () => {
 
   };
 
-  const fetchStudentGrades = async (studentName, studentGrade, gradingPeriod) => {
+  const fetchStudentGrades = async (studentName, studentGrade) => {
     const { data, error } = await supabase
       .from("Grades")
       .select("*")
       .eq("name", studentName)
-      .eq("grade", studentGrade)
-      .eq("grading", gradingPeriod);
+      .eq("grade", studentGrade);
 
     if (error) {
       console.error("Error fetching grades:", error);
@@ -277,6 +276,26 @@ const TeacherDashboard = () => {
     }
   };
 
+  const resetGradeFields = () => {
+    setNewGrade({
+      grading: "",
+      language: "",
+      esp: "",
+      english: "",
+      math: "",
+      science: "",
+      filipino: "",
+      ap: "",
+      reading: "",
+      makabansa: "",
+      gmrc: "",
+      mapeh: "",
+      average: "",
+    });
+    setHasExistingGrades(false);
+    setExistingGrades(null);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <TeacherSidebar />
@@ -321,11 +340,11 @@ const TeacherDashboard = () => {
                       className="btn btn-sm btn-outline"
                       onClick={() => {
                         setSelectedStudent(student);
-                        setNewGrade({ ...newGrades, grading: "" });
+                        resetGradeFields();
                         document.getElementById("grade_modal").showModal();
                       }}
                     >
-                      {hasExistingGrades ? "View/Edit Grades" : "Add Grades"}
+                      Add Grade
                     </button>
                     <button
                       className="btn btn-sm btn-outline btn-info"
@@ -365,14 +384,17 @@ const TeacherDashboard = () => {
         <dialog id="grade_modal" className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg">
-              {hasExistingGrades ? "View/Edit Grades for" : "Add Grades for"} {selectedStudent?.name}
+              Add Grades for {selectedStudent?.name}
             </h3>
             {/* Form for Grades */}
             <form onSubmit={handleGradeSubmit}>
               <button
                 className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                 type="button"
-                onClick={() => document.getElementById("grade_modal").close()}
+                onClick={() => {
+                  document.getElementById("grade_modal").close();
+                  resetGradeFields();
+                }}
               >
                 ✕
               </button>
@@ -617,7 +639,10 @@ const TeacherDashboard = () => {
                 <button
                   type="button"
                   className="btn"
-                  onClick={() => document.getElementById("grade_modal").close()}
+                  onClick={() => {
+                    document.getElementById("grade_modal").close();
+                    resetGradeFields();
+                  }}
                 >
                   Close
                 </button>
