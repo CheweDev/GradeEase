@@ -55,6 +55,33 @@ const Students = () => {
 
   const addStudent = async (e) => {
     e.preventDefault();
+
+    // Check if student already exists with the same LRN
+    const { data: existingLRN } = await supabase
+      .from("Student Data")
+      .select("*")
+      .eq("lrn", newStudent.lrn)
+      .single();
+
+    if (existingLRN) {
+      alert("LRN already exists. Please use a different LRN.");
+      return;
+    }
+
+    // Check if student already exists with the same name, section, and grade level
+    const { data: existingStudent } = await supabase
+      .from("Student Data")
+      .select("*")
+      .eq("name", newStudent.name)
+      .eq("section", newStudent.section)
+      .eq("grade", newStudent.grade)
+      .single();
+
+    if (existingStudent) {
+      alert("A student with the same name, section, and grade level already exists.");
+      return;
+    }
+
     const { data, error } = await supabase.from("Student Data").insert([
       {
         lrn: newStudent.lrn,
@@ -120,6 +147,35 @@ const Students = () => {
 
   const updateStudent = async (e) => {
     e.preventDefault();
+
+    // Check if LRN already exists (excluding current student)
+    const { data: existingLRN } = await supabase
+      .from("Student Data")
+      .select("*")
+      .eq("lrn", editingStudent.lrn)
+      .neq("id", editingStudent.id)
+      .single();
+
+    if (existingLRN) {
+      alert("LRN already exists. Please use a different LRN.");
+      return;
+    }
+
+    // Check if student already exists with the same name, section, and grade level (excluding current student)
+    const { data: existingStudent } = await supabase
+      .from("Student Data")
+      .select("*")
+      .eq("name", editingStudent.name)
+      .eq("section", editingStudent.section)
+      .eq("grade", editingStudent.grade)
+      .neq("id", editingStudent.id)
+      .single();
+
+    if (existingStudent) {
+      alert("A student with the same name, section, and grade level already exists.");
+      return;
+    }
+
     const { error } = await supabase
       .from("Student Data")
       .update({
@@ -340,14 +396,20 @@ const Students = () => {
                     <input
                       type="text"
                       className="w-full p-2 border rounded"
-                      placeholder="Enter Contact Number"
+                      placeholder="Enter Contact Number (11 digits)"
                       value={newStudent.contact_number}
                       onChange={(e) => {
                         const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                        setNewStudent({ ...newStudent, contact_number: numbersOnly });
+                        if (numbersOnly.length <= 11) {
+                          setNewStudent({ ...newStudent, contact_number: numbersOnly });
+                        }
                       }}
+                      maxLength={11}
                       required
                     />
+                    {newStudent.contact_number.length > 0 && newStudent.contact_number.length !== 11 && (
+                      <p className="text-red-500 text-sm mt-1">Contact number must be exactly 11 digits</p>
+                    )}
                   </label>
                 </div>
                 <div className="flex justify-end space-x-2">
@@ -492,14 +554,20 @@ const Students = () => {
                     <input
                       type="text"
                       className="w-full p-2 border rounded"
-                      placeholder="Enter Contact Number"
+                      placeholder="Enter Contact Number (11 digits)"
                       value={editingStudent.contact_number}
                       onChange={(e) => {
                         const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                        setEditingStudent({ ...editingStudent, contact_number: numbersOnly });
+                        if (numbersOnly.length <= 11) {
+                          setEditingStudent({ ...editingStudent, contact_number: numbersOnly });
+                        }
                       }}
+                      maxLength={11}
                       required
                     />
+                    {editingStudent.contact_number.length > 0 && editingStudent.contact_number.length !== 11 && (
+                      <p className="text-red-500 text-sm mt-1">Contact number must be exactly 11 digits</p>
+                    )}
                   </label>
                 </div>
                 <div className="flex justify-end space-x-2">

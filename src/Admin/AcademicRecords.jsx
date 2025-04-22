@@ -301,157 +301,307 @@ const AcademicRecords = () => {
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Language</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="language"
                     value={studentGrades.language}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">ESP</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="esp"
                     value={studentGrades.esp}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">English</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="english"
                     value={studentGrades.english}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Math</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="math"
                     value={studentGrades.math}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Science</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="science"
                     value={studentGrades.science}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Filipino</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="filipino"
                     value={studentGrades.filipino}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">AP</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="ap"
                     value={studentGrades.ap}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Reading and Literacy</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="reading"
                     value={studentGrades.reading}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Makabansa</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="makabansa"
                     value={studentGrades.makabansa}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">GMRC</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="gmrc"
                     value={studentGrades.gmrc}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">MAPEH</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     name="mapeh"
                     value={studentGrades.mapeh}
-                    onChange={handleGradeChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
+                        handleGradeChange(e);
+                      }
+                    }}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                   />
                 </div>
                 <div className="mb-1">
                   <label className="block text-sm font-medium">Average</label>
                   <input
-                    type="number"
+                    type="text"
                     name="average"
                     value={studentGrades.average}
-                    onChange={handleGradeChange}
                     className="mt-1 p-2 border rounded w-full"
-                    min="0"
-                    max="100"
-                    step="1"
                     readOnly
                   />
                 </div>

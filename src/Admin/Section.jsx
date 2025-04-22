@@ -42,6 +42,19 @@ const Section = () => {
 
   const handleAddSection = async (e) => {
     e.preventDefault();
+    
+    // Check if section name already exists (regardless of grade level)
+    const { data: existingSection } = await supabase
+      .from("Section")
+      .select("*")
+      .eq("section", section)
+      .single();
+
+    if (existingSection) {
+      alert(`Section already exists. Duplicate entries are not permitted`);
+      return;
+    }
+
     const { data, error } = await supabase.from("Section").insert([
       {
         section,
@@ -59,6 +72,20 @@ const Section = () => {
 
   const handleUpdateSection = async (e) => {
     e.preventDefault();
+    
+    // Check if the new section name already exists (excluding the current section being edited)
+    const { data: existingSection } = await supabase
+      .from("Section")
+      .select("*")
+      .eq("section", section)
+      .neq("id", editId)
+      .single();
+
+    if (existingSection) {
+      alert(`Section ${section} already exists. Please choose a different section name.`);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("Section")
       .update({
@@ -67,10 +94,10 @@ const Section = () => {
       })
       .eq("id", editId);
     if (error) {
-      console.error("Error inserting data:", error);
-      alert("Error inserting data");
+      console.error("Error updating data:", error);
+      alert("Error updating data");
     } else {
-      console.log("Data inserted successfully:", data);
+      console.log("Data updated successfully:", data);
       window.location.reload();
     }
   };
