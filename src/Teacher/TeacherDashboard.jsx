@@ -91,7 +91,7 @@ const TeacherDashboard = () => {
 
   };
 
-  const fetchStudentGrades = async (studentName, studentGrade, gradingPeriod) => {
+  const fetchStudentGrades = async (studentName, studentGrade) => {
     if (!currentSchoolYear) {
       console.error("No current school year found");
       return;
@@ -102,7 +102,6 @@ const TeacherDashboard = () => {
       .select("*")
       .eq("name", studentName)
       .eq("grade", studentGrade)
-      .eq("grading", gradingPeriod)
       .eq("school_year", currentSchoolYear);
 
     if (error) {
