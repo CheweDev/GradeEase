@@ -35,10 +35,12 @@ const TeacherDashboard = () => {
   });
   const [hasExistingGrades, setHasExistingGrades] = useState(false);
   const [existingGrades, setExistingGrades] = useState(null);
+  const [currentSchoolYear, setCurrentSchoolYear] = useState("");
 
   useEffect(() => {
     fetchAdvisers();
     fetchSections();
+    fetchCurrentSchoolYear();
   }, []);
 
   const fetchAdvisers = async () => {
@@ -63,6 +65,24 @@ const TeacherDashboard = () => {
     }
   };
 
+  const fetchCurrentSchoolYear = async () => {
+    const { data, error } = await supabase
+      .from("School Year")
+      .select("*")
+      .eq("current", "Yes")
+      .single();
+
+    if (error) {
+      console.error("Error fetching current school year:", error);
+      return;
+    }
+
+    if (data) {
+      setCurrentSchoolYear(data.school_year);
+      console.log(data.school_year);
+    }
+  };
+
   const fetchStudents = async (advisory) => {
     const { data } = await supabase.from("Student Data")
     .select("*")
@@ -71,12 +91,19 @@ const TeacherDashboard = () => {
 
   };
 
-  const fetchStudentGrades = async (studentName, studentGrade) => {
+  const fetchStudentGrades = async (studentName, studentGrade, gradingPeriod) => {
+    if (!currentSchoolYear) {
+      console.error("No current school year found");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("Grades")
       .select("*")
       .eq("name", studentName)
-      .eq("grade", studentGrade);
+      .eq("grade", studentGrade)
+      .eq("grading", gradingPeriod)
+      .eq("school_year", currentSchoolYear);
 
     if (error) {
       console.error("Error fetching grades:", error);
@@ -163,10 +190,11 @@ const TeacherDashboard = () => {
       return;
     }
 
-    const currentYear = new Date().getFullYear();
-    const nextYear = currentYear + 1;
-    const school_year = `${currentYear}-${nextYear}`;
-  
+    if (!currentSchoolYear) {
+      alert("No current school year found. Please contact the administrator.");
+      return;
+    }
+
     const subjects = [
       newGrades.language,
       newGrades.esp,
@@ -206,7 +234,7 @@ const TeacherDashboard = () => {
         section: selectedStudent.section,
         grade: selectedStudent.grade,
         grading: newGrades.grading,
-        school_year,
+        school_year: currentSchoolYear,
         language: newGrades.language === "" ? null : Number(newGrades.language),
         esp: newGrades.esp === "" ? null : Number(newGrades.esp),
         english: newGrades.english === "" ? null : Number(newGrades.english),
