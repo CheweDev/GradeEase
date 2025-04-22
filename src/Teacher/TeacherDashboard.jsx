@@ -110,10 +110,30 @@ const TeacherDashboard = () => {
     }
 
     setStudentGrades(data || []);
+  };
+
+  const checkGradesForGradingPeriod = async (studentName, studentGrade, gradingPeriod) => {
+    if (!currentSchoolYear) {
+      console.error("No current school year found");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("Grades")
+      .select("*")
+      .eq("name", studentName)
+      .eq("grade", studentGrade)
+      .eq("grading", gradingPeriod)
+      .eq("school_year", currentSchoolYear);
+
+    if (error) {
+      console.error("Error checking grades:", error);
+      return;
+    }
+
     setHasExistingGrades(data && data.length > 0);
     if (data && data.length > 0) {
       setExistingGrades(data[0]);
-      // Set the existing grades in the newGrades state
       setNewGrade({
         ...newGrades,
         language: data[0].language || "",
@@ -131,7 +151,6 @@ const TeacherDashboard = () => {
       });
     } else {
       setExistingGrades(null);
-      // Reset the grades if none exist
       setNewGrade({
         ...newGrades,
         language: "",
@@ -150,11 +169,9 @@ const TeacherDashboard = () => {
     }
   };
 
-
   const handleQuarterChange = (quarter) => {
     setSelectedQuarter(quarter);
   };
-
 
   const handleGradeChange = (subjectName, value) => {
     setGrades((prevGrades) => ({
@@ -172,7 +189,6 @@ const TeacherDashboard = () => {
     const sectionsForGradeLevel = sections.filter(
       section => section.grade_level === selectedGradeLevel
     );
-
 
     setPromotionData(prev => ({
       grade_level: selectedGradeLevel,
@@ -209,24 +225,22 @@ const TeacherDashboard = () => {
     ].map((grade) => (grade === "" ? null : Number(grade))) 
       .filter((grade) => grade !== null && !isNaN(grade)); 
   
-
-      const totalSubjects = subjects.length;
-      const totalSum = subjects.reduce((sum, grade) => sum + grade, 0);
-      
-      let average = null;
-      
-      if (totalSubjects > 0) {
-        const rawAverage = totalSum / totalSubjects;
-        const decimal = rawAverage % 1;
-      
-        if (decimal < 0.5) {
-          average = Math.floor(rawAverage);
-        } else {
-          average = Math.round(rawAverage);
-        }
+    const totalSubjects = subjects.length;
+    const totalSum = subjects.reduce((sum, grade) => sum + grade, 0);
+    
+    let average = null;
+    
+    if (totalSubjects > 0) {
+      const rawAverage = totalSum / totalSubjects;
+      const decimal = rawAverage % 1;
+    
+      if (decimal < 0.5) {
+        average = Math.floor(rawAverage);
+      } else {
+        average = Math.round(rawAverage);
       }
-      
-  
+    }
+    
     const { data, error } = await supabase.from("Grades").insert([
       {
         name: selectedStudent.name,
@@ -258,7 +272,6 @@ const TeacherDashboard = () => {
       window.location.reload();
     }
   };
-  
   
   // Handle search query change
   const handleSearchChange = (e) => {
@@ -377,7 +390,7 @@ const TeacherDashboard = () => {
                       className="btn btn-sm btn-outline btn-info"
                       onClick={() => {
                         setSelectedStudent(student);
-                        fetchStudentGrades(student.name, student.grade, "1st Grading");
+                        fetchStudentGrades(student.name, student.grade);
                         document.getElementById("view_grades_modal").showModal();
                       }}
                     >
@@ -433,7 +446,7 @@ const TeacherDashboard = () => {
                   onChange={(e) => {
                     setNewGrade({ ...newGrades, grading: e.target.value });
                     if (selectedStudent) {
-                      fetchStudentGrades(selectedStudent.name, selectedStudent.grade, e.target.value);
+                      checkGradesForGradingPeriod(selectedStudent.name, selectedStudent.grade, e.target.value);
                     }
                   }}
                 >
