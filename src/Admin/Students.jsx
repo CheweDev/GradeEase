@@ -223,143 +223,149 @@ const Students = () => {
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
             <div className="bg-white p-6 rounded shadow-lg w-2/4">
               <h3 className="text-lg font-semibold mb-4">Add New Student</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-2">
-              <span>LRN Number</span>
-              <input
-                type="text"
-                maxLength={12}
-                className="w-full p-2 border rounded"
-                placeholder="Enter LRN"
-                value={newStudent.lrn}
-                onChange={(e) => {
-                  const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                  setNewStudent({ ...newStudent, lrn: numbersOnly });
-                }}
-              />
-            </label>
-            <label className="block mb-2">
-          <span>Student Name</span>
-          <input
-            type="text"
-            className="w-full p-2 border rounded"
-            placeholder="Enter Name"
-            value={newStudent.name}
-            onChange={(e) => {
-              const onlyLetters = e.target.value.replace(/[0-9]/g, '');
-              setNewStudent({ ...newStudent, name: onlyLetters });
-            }}
-          />
-          </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-              <label className="block mb-2">
-                <span>Grade Level</span>
-                <select
-                className="w-full p-2 border rounded"
-                value={newStudent.grade}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, grade: e.target.value })
-                }
-              >
-                <option value="" disabled>Select Grade Level</option>
-                {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
-                  <option key={index} value={grade}>{grade}</option>
-                ))}
-              </select>
-
-              </label>
-              <label className="block mb-4">
-              <span>Section</span>
-              <select
-                className="w-full p-2 border rounded"
-                value={newStudent.section}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, section: e.target.value })
-                }
-              >
-                <option value="" disabled>Select Section</option>
-                {sections.map((item, index) => (
-                  <option key={index} value={item.section}>{item.section}</option>
-                ))}
-              </select>
-            </label>
-              <label className="block mb-4">
-                <span>School Year</span>
-                <select
-                className="w-full p-2 border rounded"
-                value={newStudent.school_year}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, school_year: e.target.value })
-                }
-              >
-                <option value="" disabled>Select School Year</option>
-                {schoolYear.map((item, index) => (
-                  <option key={index} value={item.school_year}>{item.school_year}</option>
-                ))}
-              </select>
-              </label>
-
-              <label className="block mb-4">
-                <span>Gender</span>
-                <select
-                  className="w-full p-2 border rounded"
-                  value={newStudent.gender}
-                  onChange={(e) =>
-                    setNewStudent({ ...newStudent, gender: e.target.value })
-                  }
-                >
-                  <option value="" disabled>Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </label>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <label className="block mb-4">
-                <span>Guardian's Name</span>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Guardian Name"
-                  value={newStudent.guardian}
-                  onChange={(e) => {
-                    const onlyLetters = e.target.value.replace(/[0-9]/g, '');
-                    setNewStudent({ ...newStudent, guardian: onlyLetters });
-                  }}
-                />
-              </label>
-
-              <label className="block mb-4">
-                <span>Guardian's Number</span>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded"
-                  placeholder="Enter Contact Number"
-                  value={newStudent.contact_number}
-                  onChange={(e) => {
-                    const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                    setNewStudent({ ...newStudent, contact_number: numbersOnly });
-                  }}
-                />
-              </label>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                  onClick={() => setIsAddModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 btn bg-[#333] text-white"
-                  onClick={addStudent}
-                >
-                  Add
-                </button>
-              </div>
+              <form onSubmit={addStudent}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <label className="block mb-2">
+                    <span>LRN Number</span>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter LRN"
+                      value={newStudent.lrn}
+                      onChange={(e) => {
+                        const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                        setNewStudent({ ...newStudent, lrn: numbersOnly });
+                      }}
+                      required
+                    />
+                  </label>
+                  <label className="block mb-2">
+                    <span>Student Name</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Name"
+                      value={newStudent.name}
+                      onChange={(e) => {
+                        const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                        setNewStudent({ ...newStudent, name: onlyLetters });
+                      }}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <label className="block mb-2">
+                    <span>Grade Level</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newStudent.grade}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, grade: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Grade Level</option>
+                      {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
+                        <option key={index} value={grade}>{grade}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>Section</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newStudent.section}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, section: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Section</option>
+                      {sections.map((item, index) => (
+                        <option key={index} value={item.section}>{item.section}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>School Year</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newStudent.school_year}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, school_year: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select School Year</option>
+                      {schoolYear.map((item, index) => (
+                        <option key={index} value={item.school_year}>{item.school_year}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>Gender</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newStudent.gender}
+                      onChange={(e) =>
+                        setNewStudent({ ...newStudent, gender: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <label className="block mb-4">
+                    <span>Guardian's Name</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Guardian Name"
+                      value={newStudent.guardian}
+                      onChange={(e) => {
+                        const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                        setNewStudent({ ...newStudent, guardian: onlyLetters });
+                      }}
+                      required
+                    />
+                  </label>
+                  <label className="block mb-4">
+                    <span>Guardian's Number</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Contact Number"
+                      value={newStudent.contact_number}
+                      onChange={(e) => {
+                        const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                        setNewStudent({ ...newStudent, contact_number: numbersOnly });
+                      }}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={() => setIsAddModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 btn bg-[#333] text-white"
+                  >
+                    Add
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
@@ -369,139 +375,149 @@ const Students = () => {
           <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,0.3)]">
             <div className="bg-white p-6 rounded shadow-lg w-2/4">
               <h3 className="text-lg font-semibold mb-4">Edit Student</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <label className="block mb-2">
-                  <span>LRN Number</span>
-                  <input
-                    type="text"
-                    maxLength={12}
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter LRN"
-                    value={editingStudent.lrn}
-                    onChange={(e) => {
-                      const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                      setEditingStudent({ ...editingStudent, lrn: numbersOnly });
-                    }}
-                  />
-                </label>
-                <label className="block mb-2">
-                  <span>Student Name</span>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter Name"
-                    value={editingStudent.name}
-                    onChange={(e) => {
-                      const onlyLetters = e.target.value.replace(/[0-9]/g, '');
-                      setEditingStudent({ ...editingStudent, name: onlyLetters });
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <label className="block mb-2">
-                  <span>Grade Level</span>
-                  <select
-                  className="w-full p-2 border rounded"
-                  value={editingStudent.grade}
-                  onChange={(e) =>
-                    setEditingStudent({ ...editingStudent, grade: e.target.value })
-                  }
-                >
-                  <option value="" disabled>Select Grade Level</option>
-                  {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
-                    <option key={index} value={grade}>{grade}</option>
-                  ))}
-                </select>
-
-                </label>
-                <label className="block mb-4">
-                  <span>Section</span>
-                  <select
-                    className="w-full p-2 border rounded"
-                    value={editingStudent.section}
-                    onChange={(e) =>
-                      setEditingStudent({ ...editingStudent, section: e.target.value })
-                    }
+              <form onSubmit={updateStudent}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <label className="block mb-2">
+                    <span>LRN Number</span>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter LRN"
+                      value={editingStudent.lrn}
+                      onChange={(e) => {
+                        const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                        setEditingStudent({ ...editingStudent, lrn: numbersOnly });
+                      }}
+                      required
+                    />
+                  </label>
+                  <label className="block mb-2">
+                    <span>Student Name</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Name"
+                      value={editingStudent.name}
+                      onChange={(e) => {
+                        const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                        setEditingStudent({ ...editingStudent, name: onlyLetters });
+                      }}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <label className="block mb-2">
+                    <span>Grade Level</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={editingStudent.grade}
+                      onChange={(e) =>
+                        setEditingStudent({ ...editingStudent, grade: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Grade Level</option>
+                      {[...new Set(sections.map(item => item.grade_level))].map((grade, index) => (
+                        <option key={index} value={grade}>{grade}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>Section</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={editingStudent.section}
+                      onChange={(e) =>
+                        setEditingStudent({ ...editingStudent, section: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Section</option>
+                      {sections.map((item, index) => (
+                        <option key={index} value={item.section}>{item.section}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>School Year</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={editingStudent.school_year}
+                      onChange={(e) =>
+                        setEditingStudent({ ...editingStudent, school_year: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select School Year</option>
+                      {schoolYear.map((item, index) => (
+                        <option key={index} value={item.school_year}>{item.school_year}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block mb-4">
+                    <span>Gender</span>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={editingStudent.gender}
+                      onChange={(e) =>
+                        setEditingStudent({ ...editingStudent, gender: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <label className="block mb-4">
+                    <span>Guardian's Name</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Guardian Name"
+                      value={editingStudent.guardian}
+                      onChange={(e) => {
+                        const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                        setEditingStudent({ ...editingStudent, guardian: onlyLetters });
+                      }}
+                      required
+                    />
+                  </label>
+                  <label className="block mb-4">
+                    <span>Guardian's Number</span>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter Contact Number"
+                      value={editingStudent.contact_number}
+                      onChange={(e) => {
+                        const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
+                        setEditingStudent({ ...editingStudent, contact_number: numbersOnly });
+                      }}
+                      required
+                    />
+                  </label>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={() => setIsEditModalOpen(false)}
                   >
-                    <option value="" disabled>Select Section</option>
-                    {sections.map((item, index) => (
-                      <option key={index} value={item.section}>{item.section}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block mb-4">
-                  <span>School Year</span>
-                  <select
-                    className="w-full p-2 border rounded"
-                    value={editingStudent.school_year}
-                    onChange={(e) =>
-                      setEditingStudent({ ...editingStudent, school_year: e.target.value })
-                    }
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 btn bg-yellow-500 text-white"
                   >
-                    <option value="" disabled>Select School Year</option>
-                    {schoolYear.map((item, index) => (
-                      <option key={index} value={item.school_year}>{item.school_year}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block mb-4">
-                  <span>Gender</span>
-                  <select
-                    className="w-full p-2 border rounded"
-                    value={editingStudent.gender}
-                    onChange={(e) =>
-                      setEditingStudent({ ...editingStudent, gender: e.target.value })
-                    }
-                  >
-                    <option value="" disabled>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </label>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <label className="block mb-4">
-                  <span>Guardian's Name</span>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter Guardian Name"
-                    value={editingStudent.guardian}
-                    onChange={(e) => {
-                      const onlyLetters = e.target.value.replace(/[0-9]/g, '');
-                      setEditingStudent({ ...editingStudent, guardian: onlyLetters });
-                    }}
-                  />
-                </label>
-                <label className="block mb-4">
-                  <span>Guardian's Number</span>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter Contact Number"
-                    value={editingStudent.contact_number}
-                    onChange={(e) => {
-                      const numbersOnly = e.target.value.replace(/[^0-9]/g, '');
-                      setEditingStudent({ ...editingStudent, contact_number: numbersOnly });
-                    }}
-                  />
-                </label>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                  onClick={() => setIsEditModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 btn bg-yellow-500 text-white"
-                  onClick={updateStudent}
-                >
-                  Update
-                </button>
-              </div>
+                    Update
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

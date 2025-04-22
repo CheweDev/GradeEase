@@ -219,62 +219,67 @@ const Advisors = () => {
                 {editingAdvisor ? "Edit Advisor" : "Add New Advisor"}
               </h3>
 
-              {/* Advisor Name Input */}
-              <label className="input w-full mb-4">
-              <input
-                type="text"
-                className="w-full p-2 rounded"
-                placeholder="Enter advisor name (e.g., Mr. Smith)"
-                value={name}
-                onChange={(e) => {
-                  const onlyLetters = e.target.value.replace(/[0-9]/g, '');
-                  setName(onlyLetters);
-                }}
-              />
-            </label>
-              {/* Grade Level Input */}
-              <label className="input w-full mb-4">
-              <select
-                className="w-full appearance-none "
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-              >
-                <option value="" disabled>Select Grade Level</option>
-                {[...new Set(sections.map(item => item.grade_level))].map((level, index) => (
-                  <option key={index} value={level}>{level}</option>
-                ))}
-              </select>
-            </label>
+              <form onSubmit={editingAdvisor ? updateAdvisor : addAdvisor}>
+                {/* Advisor Name Input */}
+                <label className="input w-full mb-4">
+                  <input
+                    type="text"
+                    className="w-full p-2 rounded"
+                    placeholder="Enter advisor name (e.g., Mr. Smith)"
+                    value={name}
+                    onChange={(e) => {
+                      const onlyLetters = e.target.value.replace(/[0-9]/g, '');
+                      setName(onlyLetters);
+                    }}
+                    required
+                  />
+                </label>
+                {/* Grade Level Input */}
+                <label className="input w-full mb-4">
+                  <select
+                    className="w-full appearance-none"
+                    value={grade}
+                    onChange={(e) => setGrade(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Grade Level</option>
+                    {[...new Set(sections.map(item => item.grade_level))].map((level, index) => (
+                      <option key={index} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </label>
 
-                   {/* Advisory Sections Input */}
-                   <label className="input w-full mb-4">
-              <select
-                className="w-full"
-                value={advisory}
-                  onChange={(e) => setAdvisory(e.target.value)}
-              >
-                <option value="" disabled>Select Section</option>
-                {sections.map((item, index) => (
-                  <option key={index} value={item.section}>{item.section}</option>
-                ))}
-              </select>
-              </label>
+                {/* Advisory Sections Input */}
+                <label className="input w-full mb-4">
+                  <select
+                    className="w-full"
+                    value={advisory}
+                    onChange={(e) => setAdvisory(e.target.value)}
+                    required
+                  >
+                    <option value="">Select Section</option>
+                    {sections.map((item, index) => (
+                      <option key={index} value={item.section}>{item.section}</option>
+                    ))}
+                  </select>
+                </label>
 
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn bg-[#333] text-white"
-                  onClick={editingAdvisor ? updateAdvisor : addAdvisor}
-                >
-                  {editingAdvisor ? "Save Changes" : "Add"}
-                </button>
-              </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn bg-[#333] text-white"
+                  >
+                    {editingAdvisor ? "Save Changes" : "Add"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

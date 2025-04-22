@@ -36,6 +36,7 @@ const TeacherDashboard = () => {
   const [hasExistingGrades, setHasExistingGrades] = useState(false);
   const [existingGrades, setExistingGrades] = useState(null);
   const [currentSchoolYear, setCurrentSchoolYear] = useState("");
+  const [selectedGradingPeriod, setSelectedGradingPeriod] = useState("");
 
   useEffect(() => {
     fetchAdvisers();
@@ -210,6 +211,33 @@ const TeacherDashboard = () => {
       return;
     }
 
+    if (!selectedGradingPeriod) {
+      alert("Please select a grading period.");
+      return;
+    }
+
+    // Validate that all grades are at least 70
+    const gradesToCheck = [
+      { subject: "Language", grade: newGrades.language },
+      { subject: "ESP", grade: newGrades.esp },
+      { subject: "English", grade: newGrades.english },
+      { subject: "Math", grade: newGrades.math },
+      { subject: "Science", grade: newGrades.science },
+      { subject: "Filipino", grade: newGrades.filipino },
+      { subject: "AP", grade: newGrades.ap },
+      { subject: "Reading", grade: newGrades.reading },
+      { subject: "Makabansa", grade: newGrades.makabansa },
+      { subject: "GMRC", grade: newGrades.gmrc },
+      { subject: "MAPEH", grade: newGrades.mapeh }
+    ];
+
+    for (const { subject, grade } of gradesToCheck) {
+      if (grade !== "" && Number(grade) < 70) {
+        alert(`Grades cannot be below 70. Please enter value between 70-99.`);
+        return;
+      }
+    }
+
     const subjects = [
       newGrades.language,
       newGrades.esp,
@@ -246,7 +274,7 @@ const TeacherDashboard = () => {
         name: selectedStudent.name,
         section: selectedStudent.section,
         grade: selectedStudent.grade,
-        grading: newGrades.grading,
+        grading: selectedGradingPeriod,
         school_year: currentSchoolYear,
         language: newGrades.language === "" ? null : Number(newGrades.language),
         esp: newGrades.esp === "" ? null : Number(newGrades.esp),
@@ -336,6 +364,26 @@ const TeacherDashboard = () => {
     setExistingGrades(null);
   };
 
+  const handleGradeModalOpen = (student) => {
+    setSelectedStudent(student);
+    setSelectedGradingPeriod("");
+    document.getElementById("grade_modal").showModal();
+  };
+
+  const handleGradeModalClose = () => {
+    document.getElementById("grade_modal").close();
+    setSelectedGradingPeriod("");
+  };
+
+  const handleGradingPeriodChange = (e) => {
+    const selectedGrading = e.target.value;
+    setSelectedGradingPeriod(selectedGrading);
+    setNewGrade(prev => ({ ...prev, grading: selectedGrading }));
+    if (selectedStudent) {
+      checkGradesForGradingPeriod(selectedStudent.name, selectedStudent.grade, selectedGrading);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <TeacherSidebar />
@@ -378,11 +426,7 @@ const TeacherDashboard = () => {
                   <td className="flex gap-2">
                     <button
                       className="btn btn-sm btn-outline"
-                      onClick={() => {
-                        setSelectedStudent(student);
-                        resetGradeFields();
-                        document.getElementById("grade_modal").showModal();
-                      }}
+                      onClick={() => handleGradeModalOpen(student)}
                     >
                       Add Grade
                     </button>
@@ -403,7 +447,7 @@ const TeacherDashboard = () => {
                         document.getElementById("promote_modal").showModal();
                       }}
                     >
-                   Promote
+                      Promote
                     </button>
                   </td>
                 </tr>
@@ -431,10 +475,7 @@ const TeacherDashboard = () => {
               <button
                 className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                 type="button"
-                onClick={() => {
-                  document.getElementById("grade_modal").close();
-                  resetGradeFields();
-                }}
+                onClick={handleGradeModalClose}
               >
                 ✕
               </button>
@@ -442,13 +483,8 @@ const TeacherDashboard = () => {
                 <span>Select Grading</span>
                 <select
                   className="w-full p-2 border rounded"
-                  value={newGrades.grading}
-                  onChange={(e) => {
-                    setNewGrade({ ...newGrades, grading: e.target.value });
-                    if (selectedStudent) {
-                      checkGradesForGradingPeriod(selectedStudent.name, selectedStudent.grade, e.target.value);
-                    }
-                  }}
+                  value={selectedGradingPeriod}
+                  onChange={handleGradingPeriodChange}
                 >
                   <option value="" disabled>Select Grading Period</option>
                   <option value="1st Grading">1st Grading</option>
@@ -462,15 +498,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Language</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.language}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, language: value });
                       }
                     }}
@@ -480,15 +526,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>ESP</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.esp}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, esp: value });
                       }
                     }}
@@ -501,15 +557,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>English</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.english}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, english: value });
                       }
                     }}
@@ -519,15 +585,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Math</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.math}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, math: value });
                       }
                     }}
@@ -540,15 +616,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Science</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.science}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, science: value });
                       }
                     }}
@@ -558,15 +644,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Filipino</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.filipino}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, filipino: value });
                       }
                     }}
@@ -579,15 +675,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>AP</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.ap}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, ap: value });
                       }
                     }}
@@ -597,15 +703,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Reading and Literacy</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.reading}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, reading: value });
                       }
                     }}
@@ -618,15 +734,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>Makabansa</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.makabansa}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, makabansa: value });
                       }
                     }}
@@ -636,15 +762,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>GMRC</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.gmrc}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, gmrc: value });
                       }
                     }}
@@ -657,15 +793,25 @@ const TeacherDashboard = () => {
                 <label className="block mb-2">
                   <span>MAPEH</span>
                   <input
-                    type="number"
-                    min="10"
-                    max="99"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    onKeyDown={(e) => {
+                      if (!/[0-9]/.test(e.key) && 
+                          e.key !== 'Backspace' && 
+                          e.key !== 'Delete' && 
+                          e.key !== 'ArrowLeft' && 
+                          e.key !== 'ArrowRight' && 
+                          e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
                     className="w-full p-2 border rounded"
                     placeholder="Enter Grade"
                     value={newGrades.mapeh}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '')) {
+                      if (/^\d{0,2}$/.test(value) && (+value <= 99 || value === '') && !value.includes('e')) {
                         setNewGrade({ ...newGrades, mapeh: value });
                       }
                     }}
