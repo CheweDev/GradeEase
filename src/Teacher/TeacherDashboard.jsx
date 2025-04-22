@@ -233,7 +233,7 @@ const TeacherDashboard = () => {
 
     for (const { subject, grade } of gradesToCheck) {
       if (grade !== "" && Number(grade) < 70) {
-        alert(`Grades cannot be below 70. Please enter value between 70-99.`);
+        alert(`Grades below 70 are considered failing and will not be accepted.`);
         return;
       }
     }
