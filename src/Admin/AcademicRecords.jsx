@@ -115,6 +115,13 @@ const AcademicRecords = () => {
   // Handle changes to student grades
   const handleGradeChange = (e) => {
     const { name, value } = e.target;
+    
+    // Don't allow grades below 70 (except empty values)
+    if (value !== "" && Number(value) < 70) {
+      alert(`Grades below 70 are considered failing and will not be accepted.`);
+      return;
+    }
+
     const updatedGrades = {
       ...studentGrades,
       [name]: value,
