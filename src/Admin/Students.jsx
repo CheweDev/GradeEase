@@ -56,18 +56,6 @@ const Students = () => {
   const addStudent = async (e) => {
     e.preventDefault();
 
-    // Check if student already exists with the same LRN
-    const { data: existingLRN } = await supabase
-      .from("Student Data")
-      .select("*")
-      .eq("lrn", newStudent.lrn)
-      .single();
-
-    if (existingLRN) {
-      alert("LRN already exists. Please use a different LRN.");
-      return;
-    }
-
     // Check if student already exists with the same name, section, and grade level
     const { data: existingStudent } = await supabase
       .from("Student Data")
@@ -75,10 +63,11 @@ const Students = () => {
       .eq("name", newStudent.name)
       .eq("section", newStudent.section)
       .eq("grade", newStudent.grade)
+      .eq("lrn", newStudent.lrn)
       .single();
 
     if (existingStudent) {
-      alert("A student with the same name, section, and grade level already exists.");
+      alert("This student is already exists. Duplicate records are not allowed");
       return;
     }
 
@@ -148,19 +137,6 @@ const Students = () => {
   const updateStudent = async (e) => {
     e.preventDefault();
 
-    // Check if LRN already exists (excluding current student)
-    const { data: existingLRN } = await supabase
-      .from("Student Data")
-      .select("*")
-      .eq("lrn", editingStudent.lrn)
-      .neq("id", editingStudent.id)
-      .single();
-
-    if (existingLRN) {
-      alert("LRN already exists. Please use a different LRN.");
-      return;
-    }
-
     // Check if student already exists with the same name, section, and grade level (excluding current student)
     const { data: existingStudent } = await supabase
       .from("Student Data")
@@ -168,11 +144,12 @@ const Students = () => {
       .eq("name", editingStudent.name)
       .eq("section", editingStudent.section)
       .eq("grade", editingStudent.grade)
+      .eq("lrn", editingStudent.lrn)
       .neq("id", editingStudent.id)
       .single();
 
     if (existingStudent) {
-      alert("A student with the same name, section, and grade level already exists.");
+      alert("This student is already exists. Duplicate records are not allowed");
       return;
     }
 
