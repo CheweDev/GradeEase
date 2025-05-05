@@ -447,6 +447,47 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleFailStudent = async (student) => {
+    // Update status in Student Data
+    const { error } = await supabase
+      .from("Student Data")
+      .update({ status: "Failed" })
+      .eq("id", student.id);
+
+    if (error) {
+      alert("Error updating student status.");
+      return;
+    }
+
+    // Insert into History table
+    const adviser = adviserName;
+    const school_year = currentSchoolYear;
+    const student_name = student.name;
+    const grade = student.grade;
+    const section = student.section;
+    const status = "Failed";
+
+    const { error: historyError } = await supabase
+      .from("History")
+      .insert([
+        {
+          student_name,
+          adviser,
+          grade,
+          section,
+          school_year,
+          status
+        }
+      ]);
+
+    if (historyError) {
+      alert("Error inserting into History table.");
+    } else {
+      alert("Student marked as Failed.");
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <TeacherSidebar />
@@ -511,6 +552,12 @@ const TeacherDashboard = () => {
                       }}
                     >
                       Promote
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline btn-error"
+                      onClick={() => handleFailStudent(student)}
+                    >
+                      Failed
                     </button>
                   </td>
                 </tr>
