@@ -87,7 +87,8 @@ const TeacherDashboard = () => {
   const fetchStudents = async (advisory) => {
     const { data } = await supabase.from("Student Data")
     .select("*")
-    .eq("section", advisory);
+    .eq("section", advisory)
+    .eq("status", "Active");
     setStudents(data);
 
   };
@@ -326,6 +327,50 @@ const TeacherDashboard = () => {
       return;
     }
 
+    // 1. Fetch all grades for this student in the current school year
+    const { data: gradesData, error: gradesError } = await supabase
+      .from("Grades")
+      .select("*")
+      .eq("name", selectedStudent.name)
+      .eq("grade", selectedStudent.grade)
+      .eq("school_year", currentSchoolYear);
+
+    if (gradesError) {
+      alert("Error checking grades for promotion.");
+      return;
+    }
+
+    // 2. Check for missing quarters
+    const quarters = ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"];
+    const completedQuarters = gradesData.map(g => g.grading);
+    const missingQuarters = quarters.filter(q => !completedQuarters.includes(q));
+    if (missingQuarters.length > 0) {
+      alert("Cannot promote: Student has missing grading period(s): " + missingQuarters.join(", "));
+      return;
+    }
+
+    // 3. Check for any grade under 75 in any subject for any quarter
+    const hasFailingGrade = gradesData.some(g =>
+      [
+        g.language, g.esp, g.english, g.math, g.science, g.filipino,
+        g.ap, g.reading, g.makabansa, g.gmrc, g.mapeh
+      ].some(val => val !== null && val !== undefined && Number(val) < 75)
+    );
+    if (hasFailingGrade) {
+      alert("Cannot promote: Student has a grade below 75 in at least one subject.");
+      return;
+    }
+
+    // Get adviser name and current school year
+    const adviser = adviserName;
+    const school_year = currentSchoolYear;
+    const student_name = selectedStudent.name;
+    // Use previous grade and section
+    const grade = selectedStudent.grade;
+    const section = selectedStudent.section;
+    const status = "Active";
+
+    // Update Student Data
     const { error } = await supabase
       .from("Student Data")
       .update({ 
@@ -338,9 +383,27 @@ const TeacherDashboard = () => {
       console.error("Error promoting student:", error);
       alert("Error promoting student");
     } else {
-      alert("Student promoted successfully");
-      document.getElementById("promote_modal").close();
-      window.location.reload();
+      // Insert into History table
+      const { error: historyError } = await supabase
+        .from("History")
+        .insert([
+          {
+            student_name,
+            adviser,
+            grade,      // previous grade
+            section,    // previous section
+            school_year,
+            status
+          }
+        ]);
+      if (historyError) {
+        console.error("Error inserting into History table:", historyError);
+        alert("Error inserting into History table");
+      } else {
+        alert("Student promoted successfully");
+        document.getElementById("promote_modal").close();
+        window.location.reload();
+      }
     }
   };
 

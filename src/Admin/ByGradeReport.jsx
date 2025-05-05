@@ -1,10 +1,12 @@
 import Sidebar from "./Sidebar.jsx";
 import Header from "./Header.jsx";
-import { RiFileExcel2Fill } from "react-icons/ri";
+import { RiFileExcel2Fill, RiFilePdfFill } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import supabase from "../SupabaseClient.jsx";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ByGradeReport = () => {
   const [gradeData, setGradeData] = useState([]);
@@ -348,6 +350,113 @@ const ByGradeReport = () => {
     }
   };
 
+  const exportToPDF = () => {
+    setIsExporting(true);
+    try {
+      const doc = new jsPDF('l', 'mm', 'a4');
+      const subjectName = subjects.find(s => s.value === selectedSubject)?.label || "All Subjects";
+      const gradingPeriod = selectedGrading === "all"
+        ? "All Gradings"
+        : gradingPeriods.find(g => g.value === selectedGrading)?.label || "All Grading Periods";
+
+      doc.setFontSize(16);
+      doc.text("LEARNERS' PROFICIENCY LEVEL BY GRADE LEVEL", 14, 15);
+      doc.setFontSize(12);
+      doc.text(`Subject: ${subjectName}`, 14, 25);
+      doc.text(`Grading Period: ${gradingPeriod}`, 14, 32);
+      doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 14, 39);
+
+      // Prepare table data
+      const tableData = filteredData.map(row => [
+        row.grade,
+        row.enrollment.m, row.enrollment.f, row.enrollment.t,
+        row.outstanding.m, row.outstanding.f, row.outstanding.t,
+        row.verySatisfactory.m, row.verySatisfactory.f, row.verySatisfactory.t,
+        row.satisfactory.m, row.satisfactory.f, row.satisfactory.t,
+        row.fairlySatisfactory.m, row.fairlySatisfactory.f, row.fairlySatisfactory.t,
+        row.didNotMeet.m, row.didNotMeet.f, row.didNotMeet.t,
+        row.gpa.m, row.gpa.f, row.gpa.t
+      ]);
+      // Add totals row if available
+      if (totals) {
+        tableData.push([
+          totals.grade,
+          totals.enrollment.m, totals.enrollment.f, totals.enrollment.t,
+          totals.outstanding.m, totals.outstanding.f, totals.outstanding.t,
+          totals.verySatisfactory.m, totals.verySatisfactory.f, totals.verySatisfactory.t,
+          totals.satisfactory.m, totals.satisfactory.f, totals.satisfactory.t,
+          totals.fairlySatisfactory.m, totals.fairlySatisfactory.f, totals.fairlySatisfactory.t,
+          totals.didNotMeet.m, totals.didNotMeet.f, totals.didNotMeet.t,
+          totals.gpa.m, totals.gpa.f, totals.gpa.t
+        ]);
+      }
+
+      autoTable(doc, {
+        head: [
+          [
+            { content: "GRADE LEVEL", rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Number of Learners", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Outstanding (90-100%)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Very Satisfactory (85-89%)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Satisfactory (80-84%)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Fairly Satisfactory (75-79%)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Did Not Meet Expectation (70-74%)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "General Percentage Average (GPA)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+          ],
+          [
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+          ]
+        ],
+        body: tableData,
+        startY: 45,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 2,
+          halign: 'center',
+          valign: 'middle',
+        },
+        headStyles: {
+          fillColor: [255, 230, 128],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+        },
+        margin: { top: 45 }
+      });
+
+      const fileName = `Proficiency_Level_Report_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}_${gradingPeriod.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      alert("An error occurred while exporting to PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
@@ -374,6 +483,14 @@ const ByGradeReport = () => {
             >
               <RiFileExcel2Fill className="mr-1" />
               {isExporting ? 'Exporting...' : 'Export via Excel'}
+            </button>
+            <button 
+              className="btn bg-red-700 text-white flex items-center px-3 py-1 rounded"
+              onClick={exportToPDF}
+              disabled={isExporting || isLoading || filteredData.length === 0}
+            >
+              <RiFilePdfFill className="mr-1" />
+              {isExporting ? 'Exporting...' : 'Export via PDF'}
             </button>
           </div>
         </div>

@@ -17,6 +17,7 @@ import TeacherDashboard from "./Teacher/TeacherDashboard.jsx";
 import TeacherProfile from "./Teacher/TeacherProfile.jsx";
 import TeacherSectionReport from "./Teacher/TeacherSectionReport.jsx";
 import TeacherGradeReport from "./Teacher/TeacherGradeReport.jsx";
+import TeacherHistory from "./Teacher/TeacherHistory.jsx";
 
 const Router = () => {
   return (
@@ -40,6 +41,7 @@ const Router = () => {
         <Route path="/teacher-profile" element={<TeacherProfile />} />
         <Route path="/teacher-section" element={<TeacherSectionReport />} />
         <Route path="/teacher-grade" element={<TeacherGradeReport />} />
+        <Route path="/teacher-history" element={<TeacherHistory />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,10 +1,12 @@
 import TeacherSidebar from "./TeacherSidebar.jsx";
 import Header from "../Admin/Header.jsx";
-import { RiFileExcel2Fill } from "react-icons/ri";
+import { RiFileExcel2Fill, RiFilePdfFill } from "react-icons/ri";
 import { useState, useEffect } from "react";
 import supabase from "../SupabaseClient.jsx";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const TeacherSectionReport = () => {
   const [sectionData, setSectionData] = useState([]);
@@ -13,6 +15,9 @@ const TeacherSectionReport = () => {
   const [selectedSubject, setSelectedSubject] = useState("average");
   const [selectedGrading, setSelectedGrading] = useState("1st Grading");
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [advisory, setAdvisory] = useState([]);
+  const adviserName = sessionStorage.getItem('name');
 
   // List of subjects
   const subjects = [
@@ -39,9 +44,34 @@ const TeacherSectionReport = () => {
   ];
 
   useEffect(() => {
-    fetchGradeData();
-  }, [selectedSubject, selectedGrading]);
-  
+    fetchAdvisers();
+  }, []);
+
+  useEffect(() => {
+    if (advisory) {
+      fetchGradeData();
+    }
+  }, [selectedSubject, selectedGrading, advisory]);
+
+  const fetchAdvisers = async () => {
+    try {
+      const { data } = await supabase
+        .from("Advisers")
+        .select("*")
+        .eq("name", adviserName)
+        .single();
+      
+      if (data && data.advisory) {
+        console.log("Advisory data:", data);
+        setAdvisory(data);
+      } else {
+        console.log("No advisory data found");
+      }
+    } catch (error) {
+      console.error("Error fetching adviser data:", error);
+    }
+  };
+
   const exportToExcel = () => {
     setIsExporting(true);
     
@@ -115,6 +145,117 @@ const TeacherSectionReport = () => {
     }
   };
 
+  const exportToPDF = () => {
+    setIsExportingPDF(true);
+    
+    try {
+      // Create new PDF document
+      const doc = new jsPDF('l', 'mm', 'a4');
+      
+      // Generate a title for the export file based on selected filters
+      const subjectName = subjects.find(s => s.value === selectedSubject)?.label || "All Subjects";
+      const gradingPeriod = selectedGrading === "all" 
+        ? "All Gradings" 
+        : gradingPeriods.find(g => g.value === selectedGrading)?.label || "All Grading Periods";
+      
+      // Add title and subtitle
+      doc.setFontSize(16);
+      doc.text("LEARNERS' PROFICIENCY LEVEL BY SECTION", 14, 15);
+      
+      doc.setFontSize(12);
+      doc.text(`Subject: ${subjectName}`, 14, 25);
+      doc.text(`Grading Period: ${gradingPeriod}`, 14, 32);
+      doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, 14, 39);
+      
+      // Prepare table data
+      const tableData = filteredData.map(row => [
+        row.level,
+        row.enrollment.m, row.enrollment.f, row.enrollment.t,
+        row.outstanding.m, row.outstanding.f, row.outstanding.t,
+        row.verySatisfactory.m, row.verySatisfactory.f, row.verySatisfactory.t,
+        row.satisfactory.m, row.satisfactory.f, row.satisfactory.t,
+        row.fairlySatisfactory.m, row.fairlySatisfactory.f, row.fairlySatisfactory.t,
+        row.didNotMeet.m, row.didNotMeet.f, row.didNotMeet.t,
+        row.gpa.m, row.gpa.f, row.gpa.t
+      ]);
+      
+      // Define table headers
+      const headers = [
+        ['Grade Level & Section', 'M', 'F', 'T', 'M', 'F', 'T', 'M', 'F', 'T', 'M', 'F', 'T', 'M', 'F', 'T', 'M', 'F', 'T', 'M', 'F', 'T'],
+        ['', 'Enrollment', '', '', 'Outstanding', '', '', 'Very Satisfactory', '', '', 'Satisfactory', '', '', 'Fairly Satisfactory', '', '', 'Did Not Meet', '', '', 'GPA', '', '']
+      ];
+      
+      // Create the table
+      autoTable(doc, {
+        head: [
+          [
+            { content: "GRADE LEVEL & SECTION", rowSpan: 2, styles: { valign: 'middle', halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Enrollment", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Outstanding (90-100)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Very Satisfactory (85-89)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Satisfactory (80-84)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Fairly Satisfactory (75-79)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "Did not meet expectations (70-74)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+            { content: "GENERAL PERCENTAGE AVERAGE (GPA)", colSpan: 3, styles: { halign: 'center', fillColor: [255, 230, 128], fontStyle: 'bold' } },
+          ],
+          [
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "M", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "F", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+            { content: "T", styles: { halign: 'center', fillColor: [255, 230, 128] } },
+          ]
+        ],
+        body: tableData,
+        startY: 45,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 2,
+          halign: 'center',
+          valign: 'middle',
+        },
+        headStyles: {
+          fillColor: [255, 230, 128],
+          textColor: [0, 0, 0],
+          fontStyle: 'bold',
+        },
+        columnStyles: {
+          0: { cellWidth: 40 }, // Make the first column wider
+          // Optionally set widths for other columns
+        },
+        margin: { top: 45 }
+      });
+      
+      // Generate file name
+      const fileName = `Section_Proficiency_Report_${subjectName.replace(/[^a-zA-Z0-9]/g, "_")}_${gradingPeriod.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Save the PDF
+      doc.save(fileName);
+    } catch (error) {
+      console.error("Error exporting to PDF:", error);
+      alert("An error occurred while exporting to PDF. Please try again.");
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
   const fetchGradeData = async () => {
     setIsLoading(true);
     try {
@@ -144,6 +285,13 @@ const TeacherSectionReport = () => {
       // Add grading period filter if not "all"
       if (selectedGrading !== "all") {
         query = query.eq('grading', selectedGrading);
+      }
+
+      // Filter by advisory sections
+      if (advisory && advisory.grade && advisory.advisory) {
+        // Add filters for grade and section
+        query = query.eq('grade', advisory.grade)
+                    .eq('section', advisory.advisory);
       }
 
       const { data: gradesData, error } = await query;
@@ -299,14 +447,22 @@ const TeacherSectionReport = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-400 rounded px-3 py-1 bg-white"
             />
-          <button 
-          className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded"
-          onClick={exportToExcel}
-          disabled={isExporting || isLoading || filteredData.length === 0}
-        >
-          <RiFileExcel2Fill className="mr-1" />
-          {isExporting ? 'Exporting...' : 'Export via Excel'}
-        </button>
+            <button 
+              className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded"
+              onClick={exportToExcel}
+              disabled={isExporting || isLoading || filteredData.length === 0}
+            >
+              <RiFileExcel2Fill className="mr-1" />
+              {isExporting ? 'Exporting...' : 'Export via Excel'}
+            </button>
+            <button 
+              className="btn bg-red-700 text-white flex items-center px-3 py-1 rounded"
+              onClick={exportToPDF}
+              disabled={isExportingPDF || isLoading || filteredData.length === 0}
+            >
+              <RiFilePdfFill className="mr-1" />
+              {isExportingPDF ? 'Exporting...' : 'Export via PDF'}
+            </button>
           </div>
         </div>
 

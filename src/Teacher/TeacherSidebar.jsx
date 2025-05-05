@@ -111,6 +111,21 @@ const TeacherSidebar = () => {
                 <span className="flex-1">Dashboard</span>
               </NavLink>
             </li>
+            <li>
+              <NavLink
+                to="/teacher-history"
+                className={({ isActive }) =>
+                  `flex items-center px-4 py-2.5 text-sm ${
+                    isActive ? "bg-teal-500 text-white" : "hover:bg-[#2a3441]"
+                  }`
+                }
+              >
+                <span className="inline-flex items-center justify-center w-5 h-5 mr-3">
+                  <FiGrid size={16} />
+                </span>
+                <span className="flex-1">History</span>
+              </NavLink>
+            </li>
 
               {/* Reports */}
                       <li>
@@ -149,7 +164,7 @@ const TeacherSidebar = () => {
                                 <span className="flex-1">By Section</span>
                               </NavLink>
                             </li>
-                            <li>
+                            {/* <li>
                               <NavLink
                                     to="/teacher-grade"
                                 className={({ isActive }) =>
@@ -165,7 +180,7 @@ const TeacherSidebar = () => {
                                 </span>
                                 <span className="flex-1">By Grade Level</span>
                               </NavLink>
-                            </li>
+                            </li> */}
                           </ul>
                         )}
                       </li>
