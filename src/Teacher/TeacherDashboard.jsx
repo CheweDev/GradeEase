@@ -11,6 +11,7 @@ const TeacherDashboard = () => {
   const [adviserSection, setAdviserSection] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudents, setSelectedStudents] = useState([]);
   const [selectedQuarter, setSelectedQuarter] = useState("firstQuarter");
   const [grades, setGrades] = useState([]);
   const [studentGrades, setStudentGrades] = useState([]);
@@ -51,7 +52,6 @@ const TeacherDashboard = () => {
     .eq("name", adviserName)
     .single();
     fetchStudents(data.advisory);
-
   };
 
   const fetchSections = async () => {
@@ -90,7 +90,6 @@ const TeacherDashboard = () => {
     .eq("section", advisory)
     .eq("status", "Active");
     setStudents(data);
-
   };
 
   const fetchStudentGrades = async (studentName, studentGrade) => {
@@ -217,7 +216,6 @@ const TeacherDashboard = () => {
       return;
     }
 
-    // Validate that all grades are at least 70
     const gradesToCheck = [
       { subject: "Language", grade: newGrades.language },
       { subject: "ESP", grade: newGrades.esp },
@@ -302,12 +300,10 @@ const TeacherDashboard = () => {
     }
   };
   
-  // Handle search query change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Filter students by LRN or name
   const filteredStudents = students.filter(
     (student) =>
       student.lrn.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -322,88 +318,109 @@ const TeacherDashboard = () => {
   const handlePromoteStudent = async (e) => {
     e.preventDefault();
     
-    if (!selectedStudent || !promotionData.section || !promotionData.grade_level) {
+    if (selectedStudents.length === 0) {
+      alert("Please select at least one student to promote");
+      return;
+    }
+
+    if (!promotionData.section || !promotionData.grade_level) {
       alert("Please select a section and grade level");
       return;
     }
 
-    // 1. Fetch all grades for this student in the current school year
-    const { data: gradesData, error: gradesError } = await supabase
-      .from("Grades")
-      .select("*")
-      .eq("name", selectedStudent.name)
-      .eq("grade", selectedStudent.grade)
-      .eq("school_year", currentSchoolYear);
+    let successfulPromotions = 0;
+    let failedPromotions = 0;
 
-    if (gradesError) {
-      alert("Error checking grades for promotion.");
-      return;
-    }
+    for (const student of selectedStudents) {
+      const { data: gradesData, error: gradesError } = await supabase
+        .from("Grades")
+        .select("*")
+        .eq("name", student.name)
+        .eq("grade", student.grade)
+        .eq("school_year", currentSchoolYear);
 
-    // 2. Check for missing quarters
-    const quarters = ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"];
-    const completedQuarters = gradesData.map(g => g.grading);
-    const missingQuarters = quarters.filter(q => !completedQuarters.includes(q));
-    if (missingQuarters.length > 0) {
-      alert("Cannot promote: Student has missing grading period(s): " + missingQuarters.join(", "));
-      return;
-    }
+      if (gradesError) {
+        alert(`Error checking grades for ${student.name}.`);
+        failedPromotions++;
+        continue;
+      }
 
-    // 3. Check for any grade under 75 in any subject for any quarter
-    const hasFailingGrade = gradesData.some(g =>
-      [
-        g.language, g.esp, g.english, g.math, g.science, g.filipino,
-        g.ap, g.reading, g.makabansa, g.gmrc, g.mapeh
-      ].some(val => val !== null && val !== undefined && Number(val) < 75)
-    );
-    if (hasFailingGrade) {
-      alert("Cannot promote: Student has a grade below 75 in at least one subject.");
-      return;
-    }
+      const quarters = ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"];
+      const completedQuarters = gradesData.map(g => g.grading);
+      const missingQuarters = quarters.filter(q => !completedQuarters.includes(q));
+      if (missingQuarters.length > 0) {
+        alert(`Cannot promote ${student.name}: Missing grading period(s): ${missingQuarters.join(", ")}`);
+        failedPromotions++;
+        continue;
+      }
 
-    // Get adviser name and current school year
-    const adviser = adviserName;
-    const school_year = currentSchoolYear;
-    const student_name = selectedStudent.name;
-    // Use previous grade and section
-    const grade = selectedStudent.grade;
-    const section = selectedStudent.section;
-    const status = "Active";
+      const hasFailingGrade = gradesData.some(g =>
+        [
+          g.language, g.esp, g.english, g.math, g.science, g.filipino,
+          g.ap, g.reading, g.makabansa, g.gmrc, g.mapeh
+        ].some(val => val !== null && val !== undefined && Number(val) < 75)
+      );
+      if (hasFailingGrade) {
+        alert(`Cannot promote ${student.name}: Has a grade below 75 in at least one subject.`);
+        failedPromotions++;
+        continue;
+      }
 
-    // Update Student Data
-    const { error } = await supabase
-      .from("Student Data")
-      .update({ 
-        section: promotionData.section,
-        grade: promotionData.grade_level 
-      })
-      .eq("id", selectedStudent.id);
+      const adviser = adviserName;
+      const school_year = currentSchoolYear;
+      const student_name = student.name;
+      const grade = student.grade;
+      const section = student.section;
+      const status = "Active";
 
-    if (error) {
-      console.error("Error promoting student:", error);
-      alert("Error promoting student");
-    } else {
-      // Insert into History table
+      const { error } = await supabase
+        .from("Student Data")
+        .update({ 
+          section: promotionData.section,
+          grade: promotionData.grade_level 
+        })
+        .eq("id", student.id);
+
+      if (error) {
+        console.error(`Error promoting student ${student.name}:`, error);
+        alert(`Error promoting ${student.name}`);
+        failedPromotions++;
+        continue;
+      }
+
       const { error: historyError } = await supabase
         .from("History")
         .insert([
           {
             student_name,
             adviser,
-            grade,      // previous grade
-            section,    // previous section
+            grade,
+            section,
             school_year,
             status
           }
         ]);
+
       if (historyError) {
-        console.error("Error inserting into History table:", historyError);
-        alert("Error inserting into History table");
-      } else {
-        alert("Student promoted successfully");
-        document.getElementById("promote_modal").close();
-        window.location.reload();
+        console.error(`Error inserting into History table for ${student.name}:`, historyError);
+        alert(`Error inserting into History table for ${student.name}`);
+        failedPromotions++;
+        continue;
       }
+
+      successfulPromotions++;
+    }
+
+    if (successfulPromotions > 0) {
+      if (failedPromotions > 0) {
+        alert(`${successfulPromotions} student(s) promoted successfully. ${failedPromotions} student(s) failed to promote.`);
+      } else {
+        alert("All selected students have been promoted successfully!");
+      }
+      document.getElementById("promote_modal").close();
+      window.location.reload();
+    } else {
+      alert("No students were promoted. Please check the error messages above.");
     }
   };
 
@@ -448,7 +465,6 @@ const TeacherDashboard = () => {
   };
 
   const handleFailStudent = async (student) => {
-    // Update status in Student Data
     const { error } = await supabase
       .from("Student Data")
       .update({ status: "Failed" })
@@ -459,7 +475,6 @@ const TeacherDashboard = () => {
       return;
     }
 
-    // Insert into History table
     const adviser = adviserName;
     const school_year = currentSchoolYear;
     const student_name = student.name;
@@ -488,6 +503,25 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleStudentSelection = (student) => {
+    setSelectedStudents(prev => {
+      const isSelected = prev.some(s => s.id === student.id);
+      if (isSelected) {
+        return prev.filter(s => s.id !== student.id);
+      } else {
+        return [...prev, student];
+      }
+    });
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedStudents(filteredStudents);
+    } else {
+      setSelectedStudents([]);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <TeacherSidebar />
@@ -499,7 +533,6 @@ const TeacherDashboard = () => {
             <p className="mt-1 text-gray-600">Add Grades for your Students</p>
           </div>
 
-          {/* Search Input */}
           <div>
             <input
               type="text"
@@ -511,11 +544,18 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        {/* Student Table */}
         <div className="overflow-x-auto bg-white p-6 rounded-lg shadow-lg mb-6">
           <table className="table w-full">
             <thead>
               <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                </th>
                 <th>LRN</th>
                 <th>Name</th>
                 <th>Action</th>
@@ -525,6 +565,14 @@ const TeacherDashboard = () => {
             {filteredStudents.length > 0 ? (
               filteredStudents.map((student) => (
                 <tr key={student.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      className="checkbox"
+                      checked={selectedStudents.some(s => s.id === student.id)}
+                      onChange={() => handleStudentSelection(student)}
+                    />
+                  </td>
                   <td>{student.lrn}</td>
                   <td>{student.name}</td>
                   <td className="flex gap-2">
@@ -545,15 +593,6 @@ const TeacherDashboard = () => {
                       View Grades
                     </button>
                     <button
-                      className="btn btn-sm btn-outline"
-                      onClick={() => {
-                        setSelectedStudent(student);
-                        document.getElementById("promote_modal").showModal();
-                      }}
-                    >
-                      Promote
-                    </button>
-                    <button
                       className="btn btn-sm btn-outline btn-error"
                       onClick={() => handleFailStudent(student)}
                     >
@@ -564,23 +603,35 @@ const TeacherDashboard = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="text-center p-4 text-gray-500">
+                <td colSpan="4" className="text-center p-4 text-gray-500">
                   No students found.
                 </td>
               </tr>
             )}
           </tbody>
-
           </table>
         </div>
 
-        {/* Add/Update Grades Modal */}
+        <div className="flex justify-end mb-4">
+          <button
+            className="btn bg-[#333] text-white"
+            onClick={() => {
+              if (selectedStudents.length === 0) {
+                alert("Please select at least one student to promote");
+                return;
+              }
+              document.getElementById("promote_modal").showModal();
+            }}
+          >
+            Promote Selected Students ({selectedStudents.length})
+          </button>
+        </div>
+
         <dialog id="grade_modal" className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg">
               Add Grades for {selectedStudent?.name}
             </h3>
-            {/* Form for Grades */}
             <form onSubmit={handleGradeSubmit}>
               <button
                 className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -930,7 +981,6 @@ const TeacherDashboard = () => {
                 </label>
               </div>
 
-              {/* Modal Footer */}
               <div className="modal-action">
                 <button
                   type="button"
@@ -952,134 +1002,133 @@ const TeacherDashboard = () => {
           </div>
         </dialog>
 
-        {/* View Grades Modal */}
-<dialog id="view_grades_modal" className="modal">
-  <div className="modal-box max-w-4xl">
-    <h3 className="font-bold text-lg mb-4">
-      Grades for {selectedStudent?.name}
-    </h3>
-    <button
-      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-      onClick={() => document.getElementById("view_grades_modal").close()}
-    >
-      ✕
-    </button>
-    
-    <div className="overflow-x-auto">
-      <table className="table w-full border">
-        <thead>
-          <tr>
-            <th className="border bg-gray-100">Subject</th>
-            <th className="border bg-gray-100">1st Grading</th>
-            <th className="border bg-gray-100">2nd Grading</th>
-            <th className="border bg-gray-100">3rd Grading</th>
-            <th className="border bg-gray-100">4th Grading</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className="border font-medium">Language</td>
-            <td className="border text-center">{getGradeForSubject("language", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("language", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("language", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("language", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">ESP</td>
-            <td className="border text-center">{getGradeForSubject("esp", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("esp", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("esp", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("esp", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">English</td>
-            <td className="border text-center">{getGradeForSubject("english", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("english", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("english", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("english", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">Math</td>
-            <td className="border text-center">{getGradeForSubject("math", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("math", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("math", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("math", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">Science</td>
-            <td className="border text-center">{getGradeForSubject("science", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("science", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("science", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("science", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">Filipino</td>
-            <td className="border text-center">{getGradeForSubject("filipino", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("filipino", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("filipino", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("filipino", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">AP</td>
-            <td className="border text-center">{getGradeForSubject("ap", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("ap", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("ap", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("ap", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">Reading</td>
-            <td className="border text-center">{getGradeForSubject("reading", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("reading", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("reading", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("reading", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">Makabansa</td>
-            <td className="border text-center">{getGradeForSubject("makabansa", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("makabansa", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("makabansa", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("makabansa", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">GMRC</td>
-            <td className="border text-center">{getGradeForSubject("gmrc", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("gmrc", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("gmrc", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("gmrc", "4th Grading")}</td>
-          </tr>
-          <tr>
-            <td className="border font-medium">MAPEH</td>
-            <td className="border text-center">{getGradeForSubject("mapeh", "1st Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mapeh", "2nd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mapeh", "3rd Grading")}</td>
-            <td className="border text-center">{getGradeForSubject("mapeh", "4th Grading")}</td>
-          </tr>
-          <tr className="bg-gray-50">
-            <td className="border font-bold">Average</td>
-            <td className="border text-center font-bold">{getGradeForSubject("average", "1st Grading")}</td>
-            <td className="border text-center font-bold">{getGradeForSubject("average", "2nd Grading")}</td>
-            <td className="border text-center font-bold">{getGradeForSubject("average", "3rd Grading")}</td>
-            <td className="border text-center font-bold">{getGradeForSubject("average", "4th Grading")}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <div className="modal-action">
-      <button
-        className="btn bg-[#333] text-white"
-        onClick={() => document.getElementById("view_grades_modal").close()}
-      >
-        Close
-      </button>
-    </div>
-  </div>
-</dialog>
+        <dialog id="view_grades_modal" className="modal">
+          <div className="modal-box max-w-4xl">
+            <h3 className="font-bold text-lg mb-4">
+              Grades for {selectedStudent?.name}
+            </h3>
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => document.getElementById("view_grades_modal").close()}
+            >
+              ✕
+            </button>
+            
+            <div className="overflow-x-auto">
+              <table className="table w-full border">
+                <thead>
+                  <tr>
+                    <th className="border bg-gray-100">Subject</th>
+                    <th className="border bg-gray-100">1st Grading</th>
+                    <th className="border bg-gray-100">2nd Grading</th>
+                    <th className="border bg-gray-100">3rd Grading</th>
+                    <th className="border bg-gray-100">4th Grading</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border font-medium">Language</td>
+                    <td className="border text-center">{getGradeForSubject("language", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("language", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("language", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("language", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">ESP</td>
+                    <td className="border text-center">{getGradeForSubject("esp", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("esp", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("esp", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("esp", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">English</td>
+                    <td className="border text-center">{getGradeForSubject("english", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("english", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("english", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("english", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">Math</td>
+                    <td className="border text-center">{getGradeForSubject("math", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("math", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("math", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("math", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">Science</td>
+                    <td className="border text-center">{getGradeForSubject("science", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("science", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("science", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("science", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">Filipino</td>
+                    <td className="border text-center">{getGradeForSubject("filipino", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("filipino", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("filipino", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("filipino", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">AP</td>
+                    <td className="border text-center">{getGradeForSubject("ap", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("ap", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("ap", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("ap", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">Reading</td>
+                    <td className="border text-center">{getGradeForSubject("reading", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("reading", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("reading", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("reading", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">Makabansa</td>
+                    <td className="border text-center">{getGradeForSubject("makabansa", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("makabansa", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("makabansa", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("makabansa", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">GMRC</td>
+                    <td className="border text-center">{getGradeForSubject("gmrc", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("gmrc", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("gmrc", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("gmrc", "4th Grading")}</td>
+                  </tr>
+                  <tr>
+                    <td className="border font-medium">MAPEH</td>
+                    <td className="border text-center">{getGradeForSubject("mapeh", "1st Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("mapeh", "2nd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("mapeh", "3rd Grading")}</td>
+                    <td className="border text-center">{getGradeForSubject("mapeh", "4th Grading")}</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="border font-bold">Average</td>
+                    <td className="border text-center font-bold">{getGradeForSubject("average", "1st Grading")}</td>
+                    <td className="border text-center font-bold">{getGradeForSubject("average", "2nd Grading")}</td>
+                    <td className="border text-center font-bold">{getGradeForSubject("average", "3rd Grading")}</td>
+                    <td className="border text-center font-bold">{getGradeForSubject("average", "4th Grading")}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="modal-action">
+              <button
+                className="btn bg-[#333] text-white"
+                onClick={() => document.getElementById("view_grades_modal").close()}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </dialog>
 
-<dialog id="promote_modal" className="modal">
+        <dialog id="promote_modal" className="modal">
           <div className="modal-box">
             <h3 className="font-bold text-lg">
-              Promote {selectedStudent?.name}
+              Promote {selectedStudents.length} Selected Student{selectedStudents.length !== 1 ? 's' : ''}
             </h3>
             <form onSubmit={handlePromoteStudent}>
               <button
@@ -1144,8 +1193,6 @@ const TeacherDashboard = () => {
                 </select>
               </div>
 
-           
-
               <div className="modal-action">
                 <button
                   type="button"
@@ -1155,7 +1202,7 @@ const TeacherDashboard = () => {
                   Cancel
                 </button>
                 <button type="submit" className="btn bg-[#333] text-white">
-                  Promote Student
+                  Promote Students
                 </button>
               </div>
             </form>
