@@ -89,7 +89,7 @@ const TeacherDashboard = () => {
     .select("*")
     .eq("section", advisory)
     .eq("status", "Active");
-    setStudents(data);
+    setStudents(data.sort((a, b) => a.name.localeCompare(b.name)));
   };
 
   const fetchStudentGrades = async (studentName, studentGrade) => {
