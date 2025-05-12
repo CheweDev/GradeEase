@@ -503,6 +503,45 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleGraduateStudent = async (student) => {
+    const { error } = await supabase
+      .from("Student Data")
+      .update({ status: "Graduate" })
+      .eq("id", student.id);
+
+    if (error) {
+      alert("Error updating student status.");
+      return;
+    }
+
+    const adviser = adviserName;
+    const school_year = currentSchoolYear;
+    const student_name = student.name;
+    const grade = student.grade;
+    const section = student.section;
+    const status = "Graduate";
+
+    const { error: historyError } = await supabase
+      .from("History")
+      .insert([
+        {
+          student_name,
+          adviser,
+          grade,
+          section,
+          school_year,
+          status
+        }
+      ]);
+
+    if (historyError) {
+      alert("Error inserting into History table.");
+    } else {
+      alert("Student marked as Graduate.");
+      window.location.reload();
+    }
+  };
+
   const handleStudentSelection = (student) => {
     setSelectedStudents(prev => {
       const isSelected = prev.some(s => s.id === student.id);
@@ -598,6 +637,14 @@ const TeacherDashboard = () => {
                     >
                       Failed
                     </button>
+                    {student.grade === "Grade 6" && (
+                      <button
+                        className="btn btn-sm btn-outline btn-success"
+                        onClick={() => handleGraduateStudent(student)}
+                      >
+                        Graduate
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
