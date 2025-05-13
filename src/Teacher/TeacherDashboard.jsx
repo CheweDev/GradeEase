@@ -371,7 +371,7 @@ const TeacherDashboard = () => {
       const student_name = student.name;
       const grade = student.grade;
       const section = student.section;
-      const status = "Active";
+      const status = "Passed";
 
       const { error } = await supabase
         .from("Student Data")
@@ -504,6 +504,43 @@ const TeacherDashboard = () => {
   };
 
   const handleGraduateStudent = async (student) => {
+    // First check if all grades are present and meet requirements
+    const { data: gradesData, error: gradesError } = await supabase
+      .from("Grades")
+      .select("*")
+      .eq("name", student.name)
+      .eq("grade", student.grade)
+      .eq("school_year", currentSchoolYear);
+
+    if (gradesError) {
+      alert(`Error checking grades for ${student.name}.`);
+      return;
+    }
+
+    // Check if all grading periods are present
+    const quarters = ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"];
+    const completedQuarters = gradesData.map(g => g.grading);
+    const missingQuarters = quarters.filter(q => !completedQuarters.includes(q));
+    
+    if (missingQuarters.length > 0) {
+      alert(`Cannot graduate ${student.name}: Missing grading period(s): ${missingQuarters.join(", ")}`);
+      return;
+    }
+
+    // Check if any grade is below 75
+    const hasFailingGrade = gradesData.some(g =>
+      [
+        g.language, g.esp, g.english, g.math, g.science, g.filipino,
+        g.ap, g.reading, g.makabansa, g.gmrc, g.mapeh
+      ].some(val => val !== null && val !== undefined && Number(val) < 75)
+    );
+
+    if (hasFailingGrade) {
+      alert(`Cannot graduate ${student.name}: Has a grade below 75 in at least one subject.`);
+      return;
+    }
+
+    // If all checks pass, proceed with graduation
     const { error } = await supabase
       .from("Student Data")
       .update({ status: "Graduate" })
@@ -537,7 +574,7 @@ const TeacherDashboard = () => {
     if (historyError) {
       alert("Error inserting into History table.");
     } else {
-      alert("Student marked as Graduate.");
+      alert("Student has been graduated successfully!");
       window.location.reload();
     }
   };
