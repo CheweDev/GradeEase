@@ -440,13 +440,6 @@ const TeacherSectionReport = () => {
             No. of Learners per Proficiency Level (By Section)
           </h2>
           <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Search Grade Level..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border border-gray-400 rounded px-3 py-1 bg-white"
-            />
             <button 
               className="btn bg-green-700 text-white flex items-center px-3 py-1 rounded"
               onClick={exportToExcel}

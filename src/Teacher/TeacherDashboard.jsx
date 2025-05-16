@@ -704,12 +704,66 @@ const TeacherDashboard = () => {
                 alert("Please select at least one student to promote");
                 return;
               }
-              document.getElementById("promote_modal").showModal();
+              document.getElementById("confirm_promote_modal").showModal();
             }}
           >
             Promote Selected Students ({selectedStudents.length})
           </button>
         </div>
+
+        {/* Confirmation Modal */}
+        <dialog id="confirm_promote_modal" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-4">
+            Are you sure you want to promote these students?
+            </h3>
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => document.getElementById("confirm_promote_modal").close()}
+            >
+              ✕
+            </button>
+
+            <div className="max-h-60 overflow-y-auto mb-4">
+              <table className="table w-full">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Current Grade</th>
+                    <th>Current Section</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedStudents.map((student) => (
+                    <tr key={student.id}>
+                      <td>{student.name}</td>
+                      <td>{student.grade}</td>
+                      <td>{student.section}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={() => document.getElementById("confirm_promote_modal").close()}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn bg-[#333] text-white"
+                onClick={() => {
+                  document.getElementById("confirm_promote_modal").close();
+                  document.getElementById("promote_modal").showModal();
+                }}
+              >
+                Continue to Promotion
+              </button>
+            </div>
+          </div>
+        </dialog>
 
         <dialog id="grade_modal" className="modal">
           <div className="modal-box">

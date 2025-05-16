@@ -6,6 +6,7 @@ import Header from "./Header.jsx";
 const UserAccounts = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -38,8 +39,11 @@ const UserAccounts = () => {
       );
     }
   };
-  const handleDelete = async (userId) => {
-    const { error } = await supabase.from("Users").delete().eq("id", userId);
+
+  const handleDelete = async () => {
+    if (!userToDelete) return;
+
+    const { error } = await supabase.from("Users").delete().eq("id", userToDelete.id);
   
     if (error) {
       console.error("Error deleting user:", error);
@@ -47,7 +51,6 @@ const UserAccounts = () => {
       window.location.reload();
     }
   };
-  
 
   const filteredUsers = users.filter(
     (user) =>
@@ -101,8 +104,13 @@ const UserAccounts = () => {
                       >
                         {user.status === "Blocked" ? "Unblock" : "Block"}
                       </button>
-                      <button className="btn btn-error text-white btn-sm"
-                      onClick={() => handleDelete(user.id)}>
+                      <button 
+                        className="btn btn-error text-white btn-sm"
+                        onClick={() => {
+                          setUserToDelete(user);
+                          document.getElementById("delete_confirm_modal").showModal();
+                        }}
+                      >
                         Delete
                       </button>
                     </td>
@@ -118,6 +126,53 @@ const UserAccounts = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <dialog id="delete_confirm_modal" className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg mb-4">
+              Are you sure you want to delete this user?
+            </h3>
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => {
+                document.getElementById("delete_confirm_modal").close();
+                setUserToDelete(null);
+              }}
+            >
+              ✕
+            </button>
+
+            {userToDelete && (
+              <div className="mb-4">
+                <p>Name: {userToDelete.name}</p>
+                <p>Email: {userToDelete.email}</p>
+                <p>Role: {userToDelete.role}</p>
+              </div>
+            )}
+
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={() => {
+                  document.getElementById("delete_confirm_modal").close();
+                  setUserToDelete(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error text-white"
+                onClick={() => {
+                  handleDelete();
+                  document.getElementById("delete_confirm_modal").close();
+                }}
+              >
+                Delete User
+              </button>
+            </div>
+          </div>
+        </dialog>
       </main>
     </div>
   );
